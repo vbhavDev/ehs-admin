@@ -24,7 +24,8 @@ const openSans = Open_Sans({
 
 export const metadata: Metadata = {
   title: 'EHS Admin',
-  description: 'EHS Administration Dashboard — Manage users, media, websites, communications, and system settings.',
+  description:
+    'EHS Administration Dashboard — Manage users, media, websites, communications, and system settings.',
   keywords: ['admin', 'dashboard', 'ehs', 'management'],
   robots: 'noindex, nofollow',
 };

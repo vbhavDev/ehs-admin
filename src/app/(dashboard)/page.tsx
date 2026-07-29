@@ -2,13 +2,7 @@
 import React from 'react';
 import { SummaryCard } from '@/components/dashboard/SummaryCard';
 import { WebsiteCard } from '@/components/dashboard/WebsiteCard';
-import {
-  Globe,
-  FileImage,
-  MessageSquare,
-  Server,
-  Loader2,
-} from 'lucide-react';
+import { Globe, FileImage, MessageSquare, Server, Loader2 } from 'lucide-react';
 import { useWebsites } from '@/modules/websites/hooks/useWebsites';
 
 export default function DashboardPage() {

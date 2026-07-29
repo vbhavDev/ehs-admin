@@ -92,7 +92,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
       } else {
         await createUser(data);
       }
-      router.push('/system-user');
+      router.push('/users');
     } catch (error) {
       // Error is handled by the mutation hooks (toast)
     }

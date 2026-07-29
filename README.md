@@ -1,31 +1,34 @@
-# Core Media Admin Frontend
+# EHS Admin
 
-A robust, production-ready Next.js 16 (App Router) administration dashboard architecture.
+A robust, production-ready Next.js 16 (App Router) administration portal architecture for **EHS Admin**.
 
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
 - **Styling**: Tailwind CSS v4, `clsx`, `tailwind-merge`
 - **State Management**: Zustand (Global state), TanStack React Query (Server state)
-- **Language**: TypeScript
+- **Language**: TypeScript (v5.9+)
+- **Icons**: Lucide React
 
 ---
 
 ## Project Structure & Architecture
 
-The application is structured following feature-based modules and strict SOLID principles to ensure maintainability and separation of concerns.
+The application is structured following feature-based modules and strict SOLID principles to ensure maintainability, scalability, and clean separation of concerns.
 
 ```text
 src/
- ├── app/             # Next.js App Router (pages, layouts, error, loading)
- ├── components/      # Reusable UI components
- ├── modules/         # Feature-based domains (e.g., /auth, /users)
- ├── services/        # API abstractions (apiFetch, auth.service)
- ├── hooks/           # Reusable React hooks (useAuth, useDebounce)
- ├── store/           # Zustand global state stores (auth.store)
- ├── lib/             # Utility functions (cn for Tailwind)
- ├── types/           # TypeScript interfaces and models
- ├── constants/       # Global constants (API routes, app configs)
+ ├── app/             # Next.js App Router (pages, layouts, error, loading, not-found)
+ ├── components/      # Reusable UI components (buttons, cards, badges, modal, tables)
+ ├── context/         # React Context providers (SidebarContext, ThemeContext)
+ ├── modules/         # Active feature domains (/websites, /auth, /settings, /media)
+ ├── services/        # Centralized API layer (apiFetch.ts, website.service.ts)
+ ├── hooks/           # Custom React hooks (useAuth, useWebsites, useGlobalModal)
+ ├── store/           # Zustand global state stores
+ ├── lib/             # Utilities and helpers (cn for Tailwind)
+ ├── types/           # TypeScript interfaces and response types
+ ├── constants/       # App & API route configuration constants
+ ├── archive/         # Archived legacy modules (excluded from build checks)
  └── providers/       # Global React Context providers (QueryProvider)
 ```
 
@@ -33,10 +36,11 @@ src/
 
 ## Core Principles
 
-1. **No API calls in UI components**: All data fetching must be handled by `services/` and consumed via custom hooks or Server Components.
-2. **Predictable State**: Use TanStack Query for server state (caching, refetching) and Zustand for local/global client state.
+1. **No API calls in UI components**: All data fetching must be handled by service abstractions (`services/`) and consumed via custom hooks or Server Components.
+2. **Predictable State**: Use TanStack Query for server state (caching, refetching) and Zustand / React Context for client state.
 3. **Robust Error Handling**: Utilize the centralized `apiFetch` wrapper alongside Next.js global `error.tsx` and `not-found.tsx` boundaries.
-4. **Strict Security**: The Next.js Edge proxy (`src/proxy.ts`) protects authenticated routes globally.
+4. **Strict Security**: Next.js Edge proxy and middleware protect authenticated routes globally.
+5. **Archived Module Isolation**: Retired modules (`blogs`, `events`, `attendees`, `contacts`, `nominations`, `sponsors`, `reports`) are moved into `src/archive/` and safely ignored by TypeScript compilation.
 
 ---
 
@@ -48,9 +52,9 @@ The application utilizes a centralized `apiFetch` wrapper located in `src/servic
 
 ```typescript
 export const API_ENDPOINTS = {
-  USERS: {
-    BASE: '/users',
-    BY_ID: (id: string) => `/users/${id}`,
+  WEBSITES: {
+    BASE: '/websites',
+    BY_ID: (id: string) => `/websites/${id}`,
   },
 } as const;
 ```
@@ -60,16 +64,15 @@ export const API_ENDPOINTS = {
 Create a service file to encapsulate the API request logic.
 
 ```typescript
-// src/services/user.service.ts
+// src/services/website.service.ts
 import { apiFetch } from './apiFetch';
 import { API_ENDPOINTS } from '@/constants/api';
-import { User } from '@/types/user.types';
+import { Website } from '@/types/website.types';
 
-export const userService = {
-  async getUsers(): Promise<User[]> {
-    return apiFetch<User[]>(API_ENDPOINTS.USERS.BASE, {
+export const websiteService = {
+  async getWebsites(): Promise<Website[]> {
+    return apiFetch<Website[]>(API_ENDPOINTS.WEBSITES.BASE, {
       method: 'GET',
-      // requireAuth: true (default) -> sends credentials
     });
   },
 };
@@ -77,19 +80,19 @@ export const userService = {
 
 ### Step 3: Consume in a Hook (TanStack Query)
 
-Always fetch data through TanStack Query on the client to get caching, retries, and loading states for free.
+Always fetch data through TanStack Query on the client to get caching, retries, and loading states automatically.
 
 ```typescript
-// src/hooks/useUsers.ts
+// src/modules/websites/hooks/useWebsites.ts
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { userService } from '@/services/user.service';
+import { websiteService } from '@/services/website.service';
 
-export function useUsers() {
+export function useWebsites() {
   return useQuery({
-    queryKey: ['users'],
-    queryFn: () => userService.getUsers(),
+    queryKey: ['websites'],
+    queryFn: () => websiteService.getWebsites(),
   });
 }
 ```
@@ -99,25 +102,23 @@ export function useUsers() {
 ```tsx
 'use client';
 
-import { useUsers } from '@/hooks/useUsers';
+import { useWebsites } from '@/modules/websites/hooks/useWebsites';
 
-export function UserList() {
-  const { data: users, isLoading, error } = useUsers();
+export function WebsiteList() {
+  const { data: websites, isLoading, error } = useWebsites();
 
-  if (isLoading) return <p>Loading users...</p>;
-  if (error) return <p>Error loading users: {error.message}</p>;
+  if (isLoading) return <p>Loading websites...</p>;
+  if (error) return <p>Error loading websites: {error.message}</p>;
 
   return (
     <ul>
-      {users?.map((user) => (
-        <li key={user.id}>{user.name}</li>
+      {websites?.map((site) => (
+        <li key={site.id}>{site.name}</li>
       ))}
     </ul>
   );
 }
 ```
-
----
 
 ---
 
@@ -127,11 +128,11 @@ This project enforces strict code quality standards to maintain a production-rea
 
 ### 🛡️ Strict Quality Rules
 
-1.  **No `any` Types**: The use of `any` is strictly prohibited. Use `unknown` or define specific interfaces/types.
-2.  **No Console Logs**: `console.log` and `console.error` are not allowed in production code. Use a proper logging service if needed.
-3.  **Explicit Equality**: Always use `===` and `!==` (`eqeqeq` rule).
-4.  **Prettier Formatting**: All code must follow the project's Prettier configuration.
-5.  **Strict TypeScript**: `noImplicitAny` and `noUncheckedIndexedAccess` are enabled in `tsconfig.json`.
+1. **No `any` Types**: The use of `any` is strictly prohibited. Use `unknown` or define specific interfaces/types.
+2. **No Console Logs**: `console.log` and `console.error` are not allowed in production code.
+3. **Explicit Equality**: Always use `===` and `!==` (`eqeqeq` rule).
+4. **Prettier Formatting**: All code must follow the project's Prettier configuration.
+5. **Strict TypeScript**: `noImplicitAny` and `noUncheckedIndexedAccess` are enabled in `tsconfig.json`.
 
 ### ⚙️ Automated Enforcement
 
@@ -185,13 +186,7 @@ We have a dynamic global modal architecture that allows you to easily trigger po
 
 ### 1. The `useGlobalModal` Hook
 
-The tool you will use in any component to trigger the popup is `useGlobalModal`.
-
-> Note: We use `useGlobalModal` instead of `useModal` to avoid conflicts with the older local-state modal hooks.
-
-### 2. Standard Confirmations
-
-If you need a quick "Are you sure?" popup, use the `confirm` helper. It automatically renders standard buttons, handles loading states, and styles the modal according to the `type` (`danger`, `warning`, `info`, `success`).
+Use `useGlobalModal` in any component to trigger popups programmatically.
 
 ```tsx
 import { useGlobalModal } from '@/hooks/useGlobalModal';
@@ -201,13 +196,12 @@ export const MyComponent = () => {
 
   const handleDelete = () => {
     confirm({
-      title: 'Delete User?',
+      title: 'Delete Item?',
       message: 'This action cannot be undone.',
       confirmText: 'Yes, Delete',
-      type: 'danger', // This makes the button red and adds a warning icon!
+      type: 'danger',
       onConfirm: async () => {
         // await deleteApiCall();
-        toast.success('Deleted!');
       },
     });
   };
@@ -216,40 +210,9 @@ export const MyComponent = () => {
 };
 ```
 
-### 3. Custom Components (e.g., PDF Viewers)
+---
 
-You can inject _any_ React component into the modal by passing it to the `content` property using `openModal`. The UI is completely responsive, scaling from small sizes up to `full` width.
+## 🔒 Layout & Navigation
 
-```tsx
-import { useGlobalModal } from '@/hooks/useGlobalModal';
-import MyPDFViewer from './MyPDFViewer';
-
-export const DocumentPage = () => {
-  const { openModal, closeModal } = useGlobalModal();
-
-  const viewDocument = () => {
-    openModal({
-      title: 'Invoice #12345',
-      size: '4xl', // Use tailwind max-w sizes to control the responsiveness
-      content: <MyPDFViewer fileUrl="/invoice.pdf" />,
-      actions: (
-        <>
-          <button onClick={closeModal} className="btn-secondary">
-            Close
-          </button>
-          <button className="btn-primary">Download PDF</button>
-        </>
-      ),
-    });
-  };
-
-  return <button onClick={viewDocument}>View Invoice</button>;
-};
-```
-
-### Key Features
-
-- **Responsiveness**: Use the `size` property (`sm`, `md`, `lg`, `xl`, `full`, etc.) to perfectly fit your content.
-- **Backdrop Clicks**: Clicking outside the white box safely closes the modal.
-- **Loading States**: The `confirm` dialog automatically disables its buttons and changes text to "Processing..." while your asynchronous `onConfirm` function is running.
-- **Customization**: Use `hideHeader`, `hideFooter`, or `showCloseButton` to strip away standard UI elements if your custom React component needs to take over the entire popup real estate.
+- **Sidebar Context**: Responsive sidebar state management handles mobile slide-over drawer and desktop collapse/expand functionality seamlessly.
+- **Header**: Includes global shortcut search (`⌘+K`), dark mode toggle, and responsive mobile sidebar trigger.
