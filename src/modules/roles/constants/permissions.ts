@@ -1,0 +1,178 @@
+export const PERMISSIONS = {
+  // System Users
+  USERS_VIEW: 'users.view',
+  USERS_CREATE: 'users.create',
+  USERS_UPDATE: 'users.update',
+  USERS_DELETE: 'users.delete',
+
+  // Roles
+  ROLES_VIEW: 'roles.view',
+  ROLES_CREATE: 'roles.create',
+  ROLES_UPDATE: 'roles.update',
+  ROLES_DELETE: 'roles.delete',
+
+  // Sidebar Menu
+  SIDEBAR_MENU_VIEW: 'sidebar-menu.view',
+  SIDEBAR_MENU_CREATE: 'sidebar-menu.create',
+  SIDEBAR_MENU_UPDATE: 'sidebar-menu.update',
+  SIDEBAR_MENU_DELETE: 'sidebar-menu.delete',
+  SIDEBAR_MENU_READ_ALL: 'sidebar-menu.read_all',
+
+  // Dashboard
+  DASHBOARD_VIEW: 'dashboard.view',
+
+  // Websites
+  WEBSITES_VIEW: 'websites.view',
+  WEBSITES_CREATE: 'websites.create',
+  WEBSITES_UPDATE: 'websites.update',
+  WEBSITES_DELETE: 'websites.delete',
+  WEBSITES_MANAGE_NAVBAR: 'websites.manage_navbar',
+  WEBSITES_SEO_EDIT: 'websites.seo_edit',
+  WEBSITES_META_EDIT: 'websites.meta_edit',
+
+  // Pages
+  PAGES_VIEW: 'pages.view',
+  PAGES_CREATE: 'pages.create',
+  PAGES_UPDATE: 'pages.update',
+  PAGES_DELETE: 'pages.delete',
+  PAGES_PUBLISH: 'pages.publish',
+  PAGES_SEO_EDIT: 'pages.seo_edit',
+  PAGES_META_EDIT: 'pages.meta_edit',
+
+  // Feature Toggle
+  FEATURE_TOGGLE_VIEW: 'feature-toggle.view',
+  FEATURE_TOGGLE_UPDATE: 'feature-toggle.update',
+
+  // Settings
+  SETTINGS_VIEW: 'settings.view',
+  SETTINGS_UPDATE: 'settings.update',
+
+  // Support Tickets
+  SUPPORT_TICKET_VIEW: 'support-ticket.view',
+  SUPPORT_TICKET_UPDATE: 'support-ticket.update',
+
+  // Blogs
+  BLOGS_VIEW: 'blogs.view',
+  BLOGS_CREATE: 'blogs.create',
+  BLOGS_UPDATE: 'blogs.update',
+  BLOGS_DELETE: 'blogs.delete',
+  BLOGS_PUBLISH: 'blogs.publish',
+  BLOGS_STATUS_UPDATE: 'blogs.status_update',
+  BLOGS_SEO_EDIT: 'blogs.seo_edit',
+  BLOGS_META_EDIT: 'blogs.meta_edit',
+
+  // Events
+  EVENTS_VIEW: 'events.view',
+  EVENTS_CREATE: 'events.create',
+  EVENTS_UPDATE: 'events.update',
+  EVENTS_DELETE: 'events.delete',
+
+  // Sponsors
+  SPONSORS_VIEW: 'sponsors.view',
+  SPONSORS_CREATE: 'sponsors.create',
+  SPONSORS_UPDATE: 'sponsors.update',
+  SPONSORS_DELETE: 'sponsors.delete',
+
+  // Registrations
+  REGISTRATIONS_VIEW: 'registrations.view',
+  REGISTRATIONS_CREATE: 'registrations.create',
+  REGISTRATIONS_UPDATE: 'registrations.update',
+  REGISTRATIONS_DELETE: 'registrations.delete',
+
+  // Attendance
+  ATTENDANCE_VIEW: 'attendance.view',
+  ATTENDANCE_CREATE: 'attendance.create',
+  ATTENDANCE_UPDATE: 'attendance.update',
+  ATTENDANCE_DELETE: 'attendance.delete',
+
+  // Nominators
+  NOMINATORS_VIEW: 'nominators.view',
+  NOMINATORS_CREATE: 'nominators.create',
+  NOMINATORS_UPDATE: 'nominators.update',
+  NOMINATORS_DELETE: 'nominators.delete',
+
+  // Nominees
+  NOMINEES_VIEW: 'nominees.view',
+  NOMINEES_CREATE: 'nominees.create',
+  NOMINEES_UPDATE: 'nominees.update',
+  NOMINEES_DELETE: 'nominees.delete',
+} as const;
+
+export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
+
+export const PERMISSION_GROUPS = {
+  'User Management': [
+    PERMISSIONS.USERS_VIEW,
+    PERMISSIONS.USERS_CREATE,
+    PERMISSIONS.USERS_UPDATE,
+    PERMISSIONS.USERS_DELETE,
+    PERMISSIONS.ROLES_VIEW,
+    PERMISSIONS.ROLES_CREATE,
+    PERMISSIONS.ROLES_UPDATE,
+    PERMISSIONS.ROLES_DELETE,
+  ],
+  'Content Management': [
+    PERMISSIONS.WEBSITES_VIEW,
+    PERMISSIONS.WEBSITES_CREATE,
+    PERMISSIONS.WEBSITES_UPDATE,
+    PERMISSIONS.WEBSITES_DELETE,
+    PERMISSIONS.WEBSITES_MANAGE_NAVBAR,
+    PERMISSIONS.WEBSITES_SEO_EDIT,
+    PERMISSIONS.WEBSITES_META_EDIT,
+    PERMISSIONS.PAGES_VIEW,
+    PERMISSIONS.PAGES_CREATE,
+    PERMISSIONS.PAGES_UPDATE,
+    PERMISSIONS.PAGES_DELETE,
+    PERMISSIONS.PAGES_PUBLISH,
+    PERMISSIONS.PAGES_SEO_EDIT,
+    PERMISSIONS.PAGES_META_EDIT,
+    PERMISSIONS.BLOGS_VIEW,
+    PERMISSIONS.BLOGS_CREATE,
+    PERMISSIONS.BLOGS_UPDATE,
+    PERMISSIONS.BLOGS_DELETE,
+    PERMISSIONS.BLOGS_PUBLISH,
+    PERMISSIONS.BLOGS_STATUS_UPDATE,
+    PERMISSIONS.BLOGS_SEO_EDIT,
+    PERMISSIONS.BLOGS_META_EDIT,
+  ],
+  'Events Management': [
+    PERMISSIONS.EVENTS_VIEW,
+    PERMISSIONS.EVENTS_CREATE,
+    PERMISSIONS.EVENTS_UPDATE,
+    PERMISSIONS.EVENTS_DELETE,
+    PERMISSIONS.SPONSORS_VIEW,
+    PERMISSIONS.SPONSORS_CREATE,
+    PERMISSIONS.SPONSORS_UPDATE,
+    PERMISSIONS.SPONSORS_DELETE,
+    PERMISSIONS.REGISTRATIONS_VIEW,
+    PERMISSIONS.REGISTRATIONS_CREATE,
+    PERMISSIONS.REGISTRATIONS_UPDATE,
+    PERMISSIONS.REGISTRATIONS_DELETE,
+    PERMISSIONS.ATTENDANCE_VIEW,
+    PERMISSIONS.ATTENDANCE_CREATE,
+    PERMISSIONS.ATTENDANCE_UPDATE,
+    PERMISSIONS.ATTENDANCE_DELETE,
+    PERMISSIONS.NOMINATORS_VIEW,
+    PERMISSIONS.NOMINATORS_CREATE,
+    PERMISSIONS.NOMINATORS_UPDATE,
+    PERMISSIONS.NOMINATORS_DELETE,
+    PERMISSIONS.NOMINEES_VIEW,
+    PERMISSIONS.NOMINEES_CREATE,
+    PERMISSIONS.NOMINEES_UPDATE,
+    PERMISSIONS.NOMINEES_DELETE,
+  ],
+  'System Settings': [
+    PERMISSIONS.DASHBOARD_VIEW,
+    PERMISSIONS.SIDEBAR_MENU_VIEW,
+    PERMISSIONS.SIDEBAR_MENU_CREATE,
+    PERMISSIONS.SIDEBAR_MENU_UPDATE,
+    PERMISSIONS.SIDEBAR_MENU_DELETE,
+    PERMISSIONS.SIDEBAR_MENU_READ_ALL,
+    PERMISSIONS.FEATURE_TOGGLE_VIEW,
+    PERMISSIONS.FEATURE_TOGGLE_UPDATE,
+    PERMISSIONS.SETTINGS_VIEW,
+    PERMISSIONS.SETTINGS_UPDATE,
+    PERMISSIONS.SUPPORT_TICKET_VIEW,
+    PERMISSIONS.SUPPORT_TICKET_UPDATE,
+  ],
+};
