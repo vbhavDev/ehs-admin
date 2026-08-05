@@ -25,6 +25,22 @@ export const API_ENDPOINTS = {
       BASE: '/admin/roles',
       BY_ID: (id: string) => `/admin/roles/${id}`,
     },
+    CURRENCIES: {
+      BASE: '/admin/currencies',
+      BY_ID: (id: string) => `/admin/currencies/${id}`,
+    },
+    SUBSCRIPTION_PLANS: {
+      BASE: '/admin/subscription-plans',
+      BY_ID: (id: string) => `/admin/subscription-plans/${id}`,
+    },
+    ORGANIZATIONS: {
+      BASE: '/admin/organizations',
+      BY_ID: (id: string) => `/admin/organizations/${id}`,
+    },
+    END_USERS: {
+      BASE: '/admin/end-users',
+      BY_ID: (id: string) => `/admin/end-users/${id}`,
+    },
     COMMUNICATIONS: {
       LOGS: '/admin/communications/logs',
       LOG_BY_ID: (id: string) => `/admin/communications/logs/${id}`,

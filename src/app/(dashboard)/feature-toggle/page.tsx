@@ -24,7 +24,8 @@ export default function FeatureTogglePage() {
           System Feature Switches
         </h3>
         <p className="text-sm text-gray-500 dark:text-navy-300 max-w-md mx-auto mb-6">
-          Super-admin feature switches allow live toggling of platform modules and system integrations without downtime.
+          Super-admin feature switches allow live toggling of platform modules and system
+          integrations without downtime.
         </p>
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg text-xs font-medium">
           <ShieldAlert size={16} />

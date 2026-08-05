@@ -213,6 +213,16 @@ Examples:
 - Strict TypeScript
 
 ==================================================
+📝 REUSABLE CODE & FORM GENERATION RULES
+==================================================
+
+- Focus heavily on code reusability across UI components and forms
+- Build modular, generic form controls (e.g. `FormInput`, `FormSelect`, `FormSwitch`, `FormModal`)
+- NEVER duplicate raw input fields, labels, or error validation markup across pages
+- Encapsulate form state, Zod validation schemas, and submit handlers into composable custom hooks
+- Design forms to be schema-driven or modularly extensible for easy maintenance and scaling
+
+==================================================
 🔍 FINAL CHECKLIST (MANDATORY)
 ==================================================
 
@@ -226,6 +236,7 @@ Before generating code, ensure:
 ✔ Fully typed  
 ✔ Scalable structure  
 ✔ Tailwind used correctly
+✔ Reusable form components and modular code generated
 
 ==================================================
 🎯 OUTPUT RULES

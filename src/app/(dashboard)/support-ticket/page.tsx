@@ -24,7 +24,8 @@ export default function SupportTicketPage() {
           Help Desk & Support Center
         </h3>
         <p className="text-sm text-gray-500 dark:text-navy-300 max-w-md mx-auto mb-6">
-          Track and resolve incoming system support requests, ticket assignments, and user communications.
+          Track and resolve incoming system support requests, ticket assignments, and user
+          communications.
         </p>
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-medium">
           <LifeBuoy size={16} />
