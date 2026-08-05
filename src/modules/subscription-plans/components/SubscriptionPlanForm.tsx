@@ -116,7 +116,7 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
 
   const currencyOptions = currencies.map((c) => ({
     value: c.code,
-    label: `${c.code} (${c.symbol})`,
+    label: `${c.code} - ${c.name} (${c.symbol})`,
   }));
 
   return (
@@ -275,11 +275,14 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
                   >
                     <div className="sm:col-span-4 space-y-1.5">
                       <Label htmlFor={`pricing-currency-${index}`}>Currency</Label>
-                      <Input
-                        id={`pricing-currency-${index}`}
-                        placeholder="e.g. INR"
+                      <Select
+                        options={currencyOptions}
                         value={row.currencyCode}
-                        onChange={(e) => updatePricingRow(index, 'currencyCode', e.target.value)}
+                        onChange={(value) =>
+                          updatePricingRow(index, 'currencyCode', value as string)
+                        }
+                        placeholder="Select Currency"
+                        disabled={isLoadingCurrencies}
                       />
                     </div>
                     <div className="sm:col-span-3 space-y-1.5">
