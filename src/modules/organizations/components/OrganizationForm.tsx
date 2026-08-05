@@ -144,8 +144,10 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({ initialData 
   const onSubmit = async (data: OrgFormData) => {
     try {
       const { street, city, state, country, postalCode, ...rest } = data;
+      const selectedCurrency = currencies.find((c) => c.code === data.currencyCode);
       const payload: Record<string, unknown> = {
         ...rest,
+        currencyId: selectedCurrency?.id,
         address: { street, city, state, country, postalCode },
       };
       if (!payload.subscriptionPlanId) delete payload.subscriptionPlanId;
@@ -172,7 +174,7 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({ initialData 
 
   const currencyOptions = currencies.map((c) => ({
     value: c.code,
-    label: `${c.code} (${c.symbol})`,
+    label: `${c.code} - ${c.name} (${c.symbol})`,
   }));
 
   const statusOptions = ORGANIZATION_STATUSES.map((s) => ({

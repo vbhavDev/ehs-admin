@@ -20,6 +20,7 @@ export interface Organization {
   siteCount?: number;
   logoFileId?: { id: string; url?: string; key?: string } | string | null;
   subscriptionPlanId?: { id: string; name: string; tier: string } | string | null;
+  currencyId?: { id: string; code: string; name: string; symbol: string } | string | null;
   currencyCode?: string;
   subscriptionStartDate?: string;
   subscriptionEndDate?: string;
@@ -56,6 +57,7 @@ export interface CreateOrganizationData {
   siteCount?: number;
   logoFileId?: string;
   subscriptionPlanId?: string;
+  currencyId?: string;
   currencyCode?: string;
   subscriptionStartDate?: string;
   subscriptionEndDate?: string;
@@ -75,6 +77,7 @@ export interface UpdateOrganizationData {
   siteCount?: number;
   logoFileId?: string;
   subscriptionPlanId?: string;
+  currencyId?: string;
   currencyCode?: string;
   subscriptionStartDate?: string;
   subscriptionEndDate?: string;
