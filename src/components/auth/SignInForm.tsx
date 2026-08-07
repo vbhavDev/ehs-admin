@@ -94,7 +94,7 @@ export default function SignInForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">Email Address..</Label>
             <Input
               id="email"
               placeholder="Enter your email"

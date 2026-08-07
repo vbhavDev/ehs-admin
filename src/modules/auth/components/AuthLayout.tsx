@@ -17,28 +17,28 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
       <div className="w-full bg-white dark:bg-navy-800 rounded-[2.5rem] border border-gray-100 dark:border-navy-700 shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.25)] overflow-hidden">
         {/* Card Header with Logo */}
         <div
-          className={`pt-14 px-8 flex flex-col items-center relative overflow-hidden ${title ? 'pb-10 border-b border-gray-50 dark:border-navy-700/50' : 'pb-4'}`}
+          className={`pt-12 px-8 flex flex-col items-center relative overflow-hidden ${title ? 'pb-8 border-b border-gray-50 dark:border-navy-700/50' : 'pb-4'}`}
         >
           {/* Subtle Background Glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-brand-500/10 rounded-full blur-3xl -translate-y-1/2" />
+          {/* <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-brand-500/10 rounded-full blur-3xl -translate-y-1/2" /> */}
 
-          <div className={`${title ? 'mb-10' : 'mb-4'} relative z-10`}>
+          <div className={`${title ? 'mb-5' : 'mb-4'} relative z-10`}>
             <Link
               href="/"
               className="block transform hover:scale-105 transition-transform duration-300"
             >
               {/* Light Mode Logo */}
               <Image
-                src="/images/logo/logo.svg"
+                src="/images/logo/logo.png"
                 alt="Core Media Logo"
-                width={280}
-                height={84}
+                width={450}
+                height={150}
                 className="h-20 w-auto dark:hidden"
                 priority
               />
               {/* Dark Mode Logo */}
               <Image
-                src="/images/logo/logo-dark.svg"
+                src="/images/logo/logo.png"
                 alt="Core Media Logo"
                 width={280}
                 height={84}
