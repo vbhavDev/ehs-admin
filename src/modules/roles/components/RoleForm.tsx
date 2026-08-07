@@ -38,7 +38,7 @@ const RoleForm: React.FC<RoleFormProps> = ({ initialData, onSubmit, isLoading, o
 
   // Filter permission groups based on user role
   const filteredPermissionGroups = React.useMemo(() => {
-    if (currentUserRole === 'super_admin') return PERMISSION_GROUPS;
+    if (currentUserRole === 'devops') return PERMISSION_GROUPS;
 
     // Create a copy and remove System Settings
     const { 'System Settings': _, ...others } = PERMISSION_GROUPS;
