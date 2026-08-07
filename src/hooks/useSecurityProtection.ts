@@ -1,19 +1,68 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 interface SecurityState {
   isDevToolsOpen: boolean;
   isBlurred: boolean;
   screenshotWarning: boolean;
+  clearBlur: () => void;
 }
 
 export function useSecurityProtection(): SecurityState {
+  const pathname = usePathname();
   const [isDevToolsOpen, setIsDevToolsOpen] = useState<boolean>(false);
   const [isBlurred, setIsBlurred] = useState<boolean>(false);
   const [screenshotWarning, setScreenshotWarning] = useState<boolean>(false);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 1. Identify protected routes (data tables, view detail pages, update form pages)
+  const isProtectedPage = useMemo(() => {
+    if (!pathname) return false;
+
+    // Root dashboard page '/' is an overview page, NOT a data table/view/update page
+    if (pathname === '/') return false;
+
+    // Exclude creation and addition pages as requested
+    if (
+      pathname.endsWith('/create') ||
+      pathname.endsWith('/add') ||
+      pathname.endsWith('/new') ||
+      pathname.includes('/create/') ||
+      pathname.includes('/add/') ||
+      pathname.includes('/new/')
+    ) {
+      return false;
+    }
+
+    // All module routes containing data tables, detail views, and update forms
+    const protectedRoutes = [
+      '/currencies',
+      '/organizations',
+      '/end-users',
+      '/subscription-plans',
+      '/users',
+      '/roles-permission',
+      '/settings',
+      '/media',
+      '/communications',
+      '/sidebar-menu',
+      '/feature-toggle',
+      '/websites',
+      '/pages',
+      '/support-ticket',
+      '/deployments',
+      '/system-user',
+    ];
+
+    return protectedRoutes.some((route) => pathname.startsWith(route));
+  }, [pathname]);
+
+  const clearBlur = useCallback(() => {
+    setIsBlurred(false);
+  }, []);
 
   // Helper to clear system clipboard
   const clearClipboard = useCallback(() => {
@@ -48,7 +97,7 @@ export function useSecurityProtection(): SecurityState {
     }, 3500);
   }, [clearClipboard]);
 
-  // 1. Right-click context menu prevention (Always active)
+  // 2. Right-click context menu prevention
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -65,7 +114,7 @@ export function useSecurityProtection(): SecurityState {
     };
   }, [clearClipboard]);
 
-  // 2. Keyboard shortcut prevention (PrintScreen, Snipping tool, Save, Print, DevTools)
+  // 3. Keyboard shortcut prevention (PrintScreen, Snipping tool, Save, Print, DevTools)
   useEffect(() => {
     const isPrintScreenKey = (e: KeyboardEvent) => {
       const key = e.key ? e.key.toLowerCase() : '';
@@ -179,8 +228,32 @@ export function useSecurityProtection(): SecurityState {
     };
   }, [triggerScreenshotWarning, clearClipboard]);
 
-  // 3. Window blur / focus / visibility change detection (Blackout UI when focus lost to snip/screenshot tool)
+  // 4. Mouse cursor event tracking & focus detection (Active ONLY on data tables, view pages, update pages)
   useEffect(() => {
+    if (!isProtectedPage) {
+      setIsBlurred(false);
+      return;
+    }
+
+    // Mouse leaves window boundary -> show content protection layer
+    const handleMouseLeave = (e: MouseEvent) => {
+      if (
+        e.clientY <= 0 ||
+        e.clientX <= 0 ||
+        e.clientX >= window.innerWidth ||
+        e.clientY >= window.innerHeight ||
+        !e.relatedTarget
+      ) {
+        setIsBlurred(true);
+        clearClipboard();
+      }
+    };
+
+    // Mouse enters or moves inside current window -> automatically hide content protection layer
+    const handleMouseEnterOrMove = () => {
+      setIsBlurred(false);
+    };
+
     const handleBlur = () => {
       setIsBlurred(true);
       clearClipboard();
@@ -199,29 +272,33 @@ export function useSecurityProtection(): SecurityState {
       }
     };
 
+    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('mouseenter', handleMouseEnterOrMove);
+    window.addEventListener('mousemove', handleMouseEnterOrMove);
     window.addEventListener('blur', handleBlur, true);
     window.addEventListener('focus', handleFocus, true);
     document.addEventListener('visibilitychange', handleVisibilityChange, true);
 
     return () => {
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('mouseenter', handleMouseEnterOrMove);
+      window.removeEventListener('mousemove', handleMouseEnterOrMove);
       window.removeEventListener('blur', handleBlur, true);
       window.removeEventListener('focus', handleFocus, true);
       document.removeEventListener('visibilitychange', handleVisibilityChange, true);
     };
-  }, [clearClipboard]);
+  }, [isProtectedPage, clearClipboard]);
 
-  // 4. DevTools detection logic
+  // 5. DevTools detection logic
   useEffect(() => {
     const threshold = 160;
 
     const checkDevTools = () => {
-      // Test 1: Window Dimension Delta Check (handles docked DevTools)
       const widthThreshold = window.outerWidth - window.innerWidth > threshold;
       const heightThreshold = window.outerHeight - window.innerHeight > threshold;
 
       let detected = widthThreshold || heightThreshold;
 
-      // Test 2: Timing / Debugger check
       if (!detected) {
         const start = performance.now();
         const fn = new Function('debugger');
@@ -244,7 +321,7 @@ export function useSecurityProtection(): SecurityState {
     };
   }, []);
 
-  // 5. Continuous Debugger Trap loop when DevTools is open
+  // 6. Continuous Debugger Trap loop when DevTools is open
   useEffect(() => {
     if (!isDevToolsOpen) return;
 
@@ -266,5 +343,6 @@ export function useSecurityProtection(): SecurityState {
     isDevToolsOpen,
     isBlurred,
     screenshotWarning,
+    clearBlur,
   };
 }

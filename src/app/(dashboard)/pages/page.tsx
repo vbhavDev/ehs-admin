@@ -31,7 +31,8 @@ export default function PagesManagementPage() {
           Page Content Management
         </h3>
         <p className="text-sm text-gray-500 dark:text-navy-300 max-w-md mx-auto mb-6">
-          Manage dynamic site pages, custom templates, and website content hierarchies from this central hub.
+          Manage dynamic site pages, custom templates, and website content hierarchies from this
+          central hub.
         </p>
       </div>
     </div>

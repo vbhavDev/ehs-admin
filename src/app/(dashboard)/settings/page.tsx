@@ -41,7 +41,9 @@ export default function SystemSettingsPage() {
           <div className="w-12 h-12 bg-violet-500/10 text-violet-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             <Server size={24} />
           </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Storage & Infrastructure</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+            Storage & Infrastructure
+          </h3>
           <p className="text-xs text-gray-500 dark:text-navy-300">
             Configure S3/R2 cloud storage buckets and local file fallbacks
           </p>
@@ -51,7 +53,9 @@ export default function SystemSettingsPage() {
           <div className="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             <Bell size={24} />
           </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Notification Controls</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+            Notification Controls
+          </h3>
           <p className="text-xs text-gray-500 dark:text-navy-300">
             Manage system alert dispatches and error reporting thresholds
           </p>
@@ -61,7 +65,9 @@ export default function SystemSettingsPage() {
           <div className="w-12 h-12 bg-rose-500/10 text-rose-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             <Key size={24} />
           </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">API Credentials & Keys</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+            API Credentials & Keys
+          </h3>
           <p className="text-xs text-gray-500 dark:text-navy-300">
             Generate and manage external API access tokens and webhooks
           </p>
