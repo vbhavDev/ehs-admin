@@ -93,6 +93,9 @@ export function useSidebarMenus() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['menus'] });
+      queryClient.invalidateQueries({ queryKey: ['menus', 'all'] });
+      queryClient.invalidateQueries({ queryKey: ['menus', 'dropdown'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-sidebarMenus'] });
     },
   });
 
