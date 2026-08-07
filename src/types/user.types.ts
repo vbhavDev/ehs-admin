@@ -11,7 +11,8 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: Role;
+  role?: Role;
+  roles?: Role[];
   isActive: boolean;
   acceptTerms: boolean;
   profileImage?: string;
@@ -23,7 +24,8 @@ export interface AuthUser {
   id: string;
   email: string;
   fullName: string;
-  role: Role;
+  role?: Role;
+  roles?: Role[];
   profileImage?: string;
 }
 

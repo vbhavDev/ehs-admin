@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
-import Select from '@/components/form/Select';
 import { User } from '@/types/user.types';
 import { useRoles } from '@/modules/roles/hooks/useRoles';
 import Button from '@/components/ui/button/Button';
@@ -16,14 +15,16 @@ import { useSystemUsers } from '../hooks/useSystemUsers';
 const baseSchema = z.object({
   email: z.string().email('Invalid email address'),
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-  role: z.string().min(1, 'Role is required'),
+  role: z.string().optional(),
+  roles: z.array(z.string()).min(1, 'At least one role must be assigned'),
   isActive: z.boolean(),
 });
 
 interface UserFormData {
   email: string;
   fullName: string;
-  role: string;
+  role?: string;
+  roles: string[];
   isActive: boolean;
   password?: string;
   [key: string]: unknown;
@@ -50,6 +51,17 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
     [isEdit],
   );
 
+  const getInitialRoleIds = (data: User | null | undefined): string[] => {
+    if (!data) return [];
+    if (data.roles && data.roles.length > 0) {
+      return data.roles.map((r) => r.id);
+    }
+    if (data.role?.id) {
+      return [data.role.id];
+    }
+    return [];
+  };
+
   const {
     register,
     handleSubmit,
@@ -64,12 +76,14 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
           email: initialData.email,
           fullName: initialData.fullName,
           role: initialData.role?.id || '',
+          roles: getInitialRoleIds(initialData),
           isActive: initialData.isActive,
         }
       : {
           email: '',
           fullName: '',
           role: '',
+          roles: [],
           password: '',
           isActive: true,
         },
@@ -77,7 +91,9 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
 
   useEffect(() => {
     if (initialData) {
-      setValue('role', initialData.role?.id || '');
+      const initialRoles = getInitialRoleIds(initialData);
+      setValue('roles', initialRoles);
+      setValue('role', initialRoles[0] || '');
     }
   }, [initialData, setValue]);
 
@@ -98,10 +114,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
     }
   };
 
-  const roleOptions = roles.map((role) => ({
-    value: role.id,
-    label: role.name,
-  }));
+  const selectedRoleIds = watch('roles') || [];
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -123,7 +136,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
             {isEdit ? `Edit System User: ${initialData.fullName}` : 'Create New System User'}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            Configure system user properties and role assignments.
+            Configure system user properties and multiple role assignments.
           </p>
         </div>
 
@@ -204,18 +217,46 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="role">
-                Role <span className="text-error-500">*</span>
+            <div className="space-y-2 md:col-span-2">
+              <Label>
+                Assigned Roles <span className="text-error-500">*</span>
               </Label>
-              <Select
-                options={roleOptions}
-                value={watch('role')}
-                onChange={(value) => setValue('role', value as string)}
-                placeholder="Select Role"
-                disabled={isLoadingRoles}
-              />
-              {errors.role && <p className="mt-1 text-xs text-error-500">{errors.role.message}</p>}
+              {isLoadingRoles ? (
+                <p className="text-xs text-gray-400">Loading roles...</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 p-4 rounded-2xl bg-gray-50 dark:bg-navy-900 border border-gray-200 dark:border-navy-700">
+                  {roles.map((r) => {
+                    const isChecked = selectedRoleIds.includes(r.id);
+                    return (
+                      <label
+                        key={r.id}
+                        className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                          isChecked
+                            ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-300 font-semibold'
+                            : 'border-gray-200 dark:border-navy-700 hover:border-gray-300 dark:hover:border-navy-600 text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            const updated = e.target.checked
+                              ? [...selectedRoleIds, r.id]
+                              : selectedRoleIds.filter((id) => id !== r.id);
+                            setValue('roles', updated, { shouldValidate: true });
+                            setValue('role', updated[0] || '');
+                          }}
+                          className="w-4 h-4 rounded text-brand-500 focus:ring-brand-500 accent-brand-500 cursor-pointer"
+                        />
+                        <span className="text-sm">{r.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+              {errors.roles && (
+                <p className="mt-1 text-xs text-error-500">{errors.roles.message as string}</p>
+              )}
             </div>
           </div>
 

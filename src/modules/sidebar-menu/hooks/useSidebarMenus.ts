@@ -122,3 +122,11 @@ export function useSidebarMenus() {
       reorderMutation.isPending,
   };
 }
+
+export function useSidebarMenu(id: string | null) {
+  return useQuery({
+    queryKey: ['menus', id],
+    queryFn: () => (id ? sidebarMenuService.getSidebarMenuById(id) : null),
+    enabled: !!id,
+  });
+}

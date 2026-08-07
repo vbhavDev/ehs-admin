@@ -52,13 +52,26 @@ export const UserTable: React.FC<UserTableProps> = ({ onEdit, onDelete }) => {
       ),
     },
     {
-      header: 'Role',
-      accessor: (user) => (
-        <div className="flex items-center gap-2">
-          <ShieldCheck size={16} className="text-brand-500" />
-          <span className="text-sm font-medium">{user.role?.name || 'N/A'}</span>
-        </div>
-      ),
+      header: 'Roles',
+      accessor: (user) => {
+        const userRoles =
+          user.roles && user.roles.length > 0 ? user.roles : user.role ? [user.role] : [];
+        if (userRoles.length === 0) return <span className="text-sm text-gray-400">N/A</span>;
+
+        return (
+          <div className="flex flex-wrap gap-1.5 items-center">
+            {userRoles.map((r, idx) => (
+              <span
+                key={r.id || r.roleKey || idx}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 border border-brand-200 dark:border-brand-500/20"
+              >
+                <ShieldCheck size={12} className="text-brand-500" />
+                {r.name}
+              </span>
+            ))}
+          </div>
+        );
+      },
     },
     {
       header: 'Status',
