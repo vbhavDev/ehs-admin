@@ -3,6 +3,7 @@ import { Roboto, Open_Sans } from 'next/font/google';
 import './globals.css';
 import 'flatpickr/dist/flatpickr.css';
 import QueryProvider from '@/providers/QueryProvider';
+import { BrandThemeProvider } from '@/providers/BrandThemeProvider';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ToasterProvider } from '@/components/providers/ToasterProvider';
@@ -40,12 +41,14 @@ export default function RootLayout({
       <body className={`${openSans.className} dark:bg-gray-900`}>
         <ToasterProvider />
         <QueryProvider>
-          <ThemeProvider>
-            <ModalProvider>
-              <SidebarProvider>{children}</SidebarProvider>
-              <GlobalModal />
-            </ModalProvider>
-          </ThemeProvider>
+          <BrandThemeProvider>
+            <ThemeProvider>
+              <ModalProvider>
+                <SidebarProvider>{children}</SidebarProvider>
+                <GlobalModal />
+              </ModalProvider>
+            </ThemeProvider>
+          </BrandThemeProvider>
         </QueryProvider>
       </body>
     </html>
