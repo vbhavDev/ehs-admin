@@ -4,21 +4,39 @@ import React, { useState, useCallback, useRef } from 'react';
 import { Link2, HardDrive, FileUp } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import { useFiles } from '../hooks/useFiles';
+import { FileData } from '../types/file.types';
 import { AssetMetadataForm } from './AssetMetadataForm';
 
 interface FileUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Called with the uploaded file after a successful upload (before close). */
+  onUploaded?: (file: FileData) => void;
+  /** Preselected module for the upload metadata (default 'media'). */
+  defaultModule?: string;
+  /** Native file-input accept filter, e.g. 'image/*' (default: any file). */
+  accept?: string;
+  /** Entity linkage fields stored on the File record (defaults: manual_upload/none). */
+  entityType?: string;
+  entityId?: string;
 }
 
-export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClose }) => {
+export const FileUploadModal: React.FC<FileUploadModalProps> = ({
+  isOpen,
+  onClose,
+  onUploaded,
+  defaultModule = 'media',
+  accept,
+  entityType = 'manual_upload',
+  entityId = 'none',
+}) => {
   const { uploadFile, isUploading } = useFiles();
   const [step, setStep] = useState<'selector' | 'upload' | 'url'>('selector');
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState('');
   const [alt, setAlt] = useState('');
   const [keywords, setKeywords] = useState<string[]>([]);
-  const [module, setModule] = useState('media');
+  const [module, setModule] = useState(defaultModule);
   const [visibility, setVisibility] = useState('public');
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -55,7 +73,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClos
     setUrl('');
     setAlt('');
     setKeywords([]);
-    setModule('media');
+    setModule(defaultModule);
     setVisibility('public');
     setIsDragOver(false);
     onClose();
@@ -77,11 +95,12 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClos
     formData.append('visibility', visibility);
     formData.append('alt', alt);
     keywords.forEach((k) => formData.append('keywords[]', k));
-    formData.append('entityType', 'manual_upload');
-    formData.append('entityId', 'none');
+    formData.append('entityType', entityType);
+    formData.append('entityId', entityId);
 
     try {
-      await uploadFile(formData);
+      const uploaded = await uploadFile(formData);
+      onUploaded?.(uploaded);
       handleClose();
     } catch (error) {
       // Error handled by hook
@@ -137,6 +156,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClos
               type="file"
               id="file-upload-input"
               className="hidden"
+              accept={accept}
               onChange={handleFileChange}
             />
           </div>

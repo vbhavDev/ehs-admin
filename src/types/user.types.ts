@@ -1,3 +1,5 @@
+import { ImageLinks } from '@/modules/websites/types/website.types';
+
 export interface Role {
   id: string;
   name: string;
@@ -15,7 +17,14 @@ export interface User {
   roles?: Role[];
   isActive: boolean;
   acceptTerms: boolean;
-  profileImage?: string;
+  /**
+   * Avatar links — ResponseInterceptor maps the populated `profileImageId`
+   * File to `{ original, ...urlVariants }` (or a legacy string URL).
+   */
+  profileImage?: string | ImageLinks | null;
+  /** File Upload Law compliant avatar reference (populated File or its ID) */
+  profileImageId?: string | { id: string; url?: string } | null;
+  lastLogin?: string;
   createdAt: string;
   updatedAt: string;
 }

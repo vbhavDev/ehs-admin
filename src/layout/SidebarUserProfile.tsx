@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Dropdown } from '@/components/ui/dropdown/Dropdown';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/context/SidebarContext';
+import { getImageUrl } from '@/lib/utils';
 
 export default function SidebarUserProfile() {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,7 +42,7 @@ export default function SidebarUserProfile() {
             <Image
               width={40}
               height={40}
-              src={user?.profileImage || '/images/user/owner.jpg'}
+              src={getImageUrl(user?.profileImage) || '/images/user/owner.jpg'}
               alt={user?.fullName || 'User'}
               className="object-cover w-full h-full"
             />

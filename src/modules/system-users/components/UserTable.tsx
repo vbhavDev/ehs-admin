@@ -4,6 +4,7 @@ import { DataTable, Column } from '@/components/ui/table/DataTable';
 import { User } from '@/types/user.types';
 import { useSystemUsers } from '../hooks/useSystemUsers';
 import { Edit, Trash2, ShieldCheck, User as UserIcon } from 'lucide-react';
+import { getImageUrl } from '@/lib/utils';
 import Image from 'next/image';
 
 interface UserTableProps {
@@ -30,9 +31,9 @@ export const UserTable: React.FC<UserTableProps> = ({ onEdit, onDelete }) => {
       accessor: (user) => (
         <div className="flex items-center gap-3">
           <div className="relative h-10 w-10 overflow-hidden rounded-full bg-gray-100">
-            {user.profileImage ? (
+            {getImageUrl(user.profileImage) ? (
               <Image
-                src={user.profileImage}
+                src={getImageUrl(user.profileImage)}
                 alt={user.fullName}
                 fill
                 sizes="40px"
