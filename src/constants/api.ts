@@ -43,6 +43,9 @@ export const API_ENDPOINTS = {
       BASE: '/admin/end-users',
       BY_ID: (id: string) => `/admin/end-users/${id}`,
     },
+    PLATFORM_SETTINGS: {
+      BASE: '/admin/platform-settings',
+    },
     COMMUNICATIONS: {
       LOGS: '/admin/communications/logs',
       LOG_BY_ID: (id: string) => `/admin/communications/logs/${id}`,
