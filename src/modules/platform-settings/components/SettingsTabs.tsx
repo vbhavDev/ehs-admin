@@ -7,12 +7,14 @@ import {
   Palette,
   Smartphone,
   SlidersHorizontal,
+  MapPin,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BrandingTab } from './BrandingTab';
 import { UiColorsTab } from './UiColorsTab';
 import { PlatformTab } from './PlatformTab';
 import { ClientThemeTab } from './ClientThemeTab';
+import { LocationsTab } from './LocationsTab';
 
 interface TabDef {
   key: string;
@@ -22,7 +24,7 @@ interface TabDef {
   content: React.ReactNode;
 }
 
-/** Grouped platform settings — Branding / UI Colors / Platform. */
+/** Grouped platform settings — Branding / UI Colors / Platform / Client Theme / Locations. */
 export function SettingsTabs() {
   const tabs: TabDef[] = [
     {
@@ -52,6 +54,13 @@ export function SettingsTabs() {
       description: 'Client app design config',
       icon: Smartphone,
       content: <ClientThemeTab />,
+    },
+    {
+      key: 'locations',
+      label: 'Locations & Pincodes',
+      description: 'Indian states, cities & postal codes',
+      icon: MapPin,
+      content: <LocationsTab />,
     },
   ];
 

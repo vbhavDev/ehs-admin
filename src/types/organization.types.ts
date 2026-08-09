@@ -26,6 +26,13 @@ export interface Organization {
   subscriptionEndDate?: string;
   seatLimit: number;
   usedSeats: number;
+  maxSitesLimit?: number;
+  storageLimitGB?: number;
+  maxInspectionsPerMonth?: number;
+  maxImagesPerInspection?: number;
+  maxVideoUploads?: number;
+  subscriptionPrice?: number;
+  subscriptionFeatures?: string[];
   status: string;
   isActive: boolean;
   billingEmail?: string;
@@ -82,6 +89,13 @@ export interface UpdateOrganizationData {
   subscriptionStartDate?: string;
   subscriptionEndDate?: string;
   seatLimit?: number;
+  maxSitesLimit?: number;
+  storageLimitGB?: number;
+  maxInspectionsPerMonth?: number;
+  maxImagesPerInspection?: number;
+  maxVideoUploads?: number;
+  subscriptionPrice?: number;
+  subscriptionFeatures?: string[];
   status?: string;
   isActive?: boolean;
   billingEmail?: string;

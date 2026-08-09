@@ -12,6 +12,8 @@ export interface SubscriptionPlan {
   maxImagesPerInspection: number;
   maxVideoUploads: number;
   maxUsers: number;
+  maxPlants?: number;
+  maxStorageGB?: number;
   features: string[];
   pricing: PlanPricing[];
   defaultCurrency: string;
@@ -36,6 +38,8 @@ export interface CreateSubscriptionPlanData {
   maxImagesPerInspection: number;
   maxVideoUploads: number;
   maxUsers: number;
+  maxPlants?: number;
+  maxStorageGB?: number;
   features?: string[];
   pricing?: PlanPricing[];
   defaultCurrency?: string;
@@ -48,6 +52,8 @@ export interface UpdateSubscriptionPlanData {
   maxImagesPerInspection?: number;
   maxVideoUploads?: number;
   maxUsers?: number;
+  maxPlants?: number;
+  maxStorageGB?: number;
   features?: string[];
   pricing?: PlanPricing[];
   defaultCurrency?: string;

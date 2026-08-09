@@ -1,16 +1,17 @@
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
-import { Link2, HardDrive, FileUp } from 'lucide-react';
+import { Link2, HardDrive, FileUp, Images, ArrowLeft } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import { useFiles } from '../hooks/useFiles';
 import { FileData } from '../types/file.types';
 import { AssetMetadataForm } from './AssetMetadataForm';
+import { FileBrowser } from './FileBrowser';
 
 interface FileUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  /** Called with the uploaded file after a successful upload (before close). */
+  /** Called with the uploaded or selected file (before close). */
   onUploaded?: (file: FileData) => void;
   /** Preselected module for the upload metadata (default 'media'). */
   defaultModule?: string;
@@ -31,7 +32,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
   entityId = 'none',
 }) => {
   const { uploadFile, isUploading } = useFiles();
-  const [step, setStep] = useState<'selector' | 'upload' | 'url'>('selector');
+  const [step, setStep] = useState<'selector' | 'upload' | 'url' | 'library'>('selector');
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState('');
   const [alt, setAlt] = useState('');
@@ -108,10 +109,18 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
   };
 
   const modalTitle =
-    step === 'selector' ? 'Add New File' : step === 'upload' ? 'Upload Details' : 'Import from URL';
+    step === 'selector'
+      ? 'Add or Select Asset'
+      : step === 'upload'
+        ? 'Upload Details'
+        : step === 'url'
+          ? 'Import from URL'
+          : 'Browse Media Library';
+
+  const modalSize = step === 'library' ? '3xl' : 'lg';
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={modalTitle} size="lg">
+    <Modal isOpen={isOpen} onClose={handleClose} title={modalTitle} size={modalSize}>
       {step === 'selector' ? (
         <div className="space-y-5">
           {/* Drag & Drop Zone */}
@@ -171,7 +180,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
           </div>
 
           {/* Source Options */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -183,7 +192,23 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-gray-800 dark:text-white">Local File</p>
                 <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">
-                  Upload from your device
+                  Upload from device
+                </p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setStep('library')}
+              className="flex items-center gap-3.5 p-4 rounded-xl border border-gray-100 dark:border-navy-700 bg-white dark:bg-navy-800/50 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/30 dark:hover:bg-blue-500/5 transition-all group/card text-left"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0 group-hover/card:scale-105 transition-transform">
+                <Images size={18} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-800 dark:text-white">Media Library</p>
+                <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">
+                  Select existing asset
                 </p>
               </div>
             </button>
@@ -199,10 +224,36 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-gray-800 dark:text-white">External URL</p>
                 <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">
-                  Import from a web link
+                  Import from web link
                 </p>
               </div>
             </button>
+          </div>
+        </div>
+      ) : step === 'library' ? (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-gray-100 dark:border-navy-700 pb-3">
+            <button
+              type="button"
+              onClick={() => setStep('selector')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-navy-700 hover:bg-gray-200 dark:hover:bg-navy-600 text-xs font-semibold text-gray-700 dark:text-gray-200 transition-colors"
+            >
+              <ArrowLeft size={14} />
+              Back to Upload Options
+            </button>
+            <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
+              Click any file card to select as logo
+            </span>
+          </div>
+
+          <div className="max-h-[65vh] overflow-y-auto pr-1">
+            <FileBrowser
+              initialFileType={accept?.includes('image') ? 'image' : ''}
+              onSelect={(selectedFile) => {
+                onUploaded?.(selectedFile);
+                handleClose();
+              }}
+            />
           </div>
         </div>
       ) : (
