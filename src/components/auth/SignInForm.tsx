@@ -24,18 +24,19 @@ export default function SignInForm() {
 
   // ... (useEffect and validation stay the same)
   React.useEffect(() => {
-    const savedData = localStorage.getItem('rememberMe');
-    if (savedData) {
-      const {
-        email: savedEmail,
-        password: savedPassword,
-        isChecked: savedIsChecked,
-      } = JSON.parse(savedData);
-      if (savedIsChecked) {
-        setEmail(savedEmail);
-        setPassword(savedPassword);
-        setIsChecked(true);
+    try {
+      const savedData =
+        localStorage.getItem('ehs_admin_saved_credentials') || localStorage.getItem('rememberMe');
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (parsed.email && parsed.password) {
+          setEmail(parsed.email);
+          setPassword(parsed.password);
+          setIsChecked(true);
+        }
       }
+    } catch (e) {
+      // Ignore JSON parse errors
     }
   }, []);
 
@@ -68,8 +69,11 @@ export default function SignInForm() {
       await login({ email, password });
 
       if (isChecked) {
-        localStorage.setItem('rememberMe', JSON.stringify({ email, password, isChecked: true }));
+        const payload = JSON.stringify({ email, password, isChecked: true, saveCredentials: true });
+        localStorage.setItem('ehs_admin_saved_credentials', payload);
+        localStorage.setItem('rememberMe', payload);
       } else {
+        localStorage.removeItem('ehs_admin_saved_credentials');
         localStorage.removeItem('rememberMe');
       }
 
@@ -144,22 +148,29 @@ export default function SignInForm() {
             </div>
           </div>
 
-          {/* <div className="flex items-center">
-            <div className="flex items-center gap-3">
-              <Checkbox
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+              <input
+                type="checkbox"
                 checked={isChecked}
-                onChange={(checked) => {
+                onChange={(e) => {
+                  const checked = e.target.checked;
                   setIsChecked(checked);
                   if (!checked) {
                     localStorage.removeItem('rememberMe');
+                    localStorage.removeItem('ehs_admin_saved_credentials');
                   }
                 }}
+                className="w-4.5 h-4.5 rounded border-gray-300 dark:border-navy-600 text-brand-500 focus:ring-brand-500/20 dark:bg-navy-800 transition-colors cursor-pointer accent-brand-500"
               />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 select-none">
-                Remember me for 30 days
+              <span>Save Credentials</span>
+            </label>
+            {isChecked && email && password && (
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                ✓ Credentials Saved
               </span>
-            </div>
-          </div> */}
+            )}
+          </div>
 
           <Button
             className="w-full py-4 text-base font-bold shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40 transition-all rounded-xl"
