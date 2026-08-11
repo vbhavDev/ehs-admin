@@ -12,17 +12,32 @@ interface LoginFormProps {
   onSwitchToForgot: () => void;
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({
-  onSwitchToSignup,
-  onSwitchToForgot: _onSwitchToForgot,
-}) => {
+export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup, onSwitchToForgot }) => {
   const searchParams = useSearchParams();
   const { login, isLoggingIn } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState(searchParams.get('email') || '');
   const [password, setPassword] = useState('');
+  const [saveCredentials, setSaveCredentials] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+
+  React.useEffect(() => {
+    try {
+      const savedData =
+        localStorage.getItem('ehs_admin_saved_credentials') || localStorage.getItem('rememberMe');
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (parsed.email && parsed.password) {
+          setEmail(parsed.email);
+          setPassword(parsed.password);
+          setSaveCredentials(true);
+        }
+      }
+    } catch (e) {
+      // Ignore JSON parse errors
+    }
+  }, []);
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -51,6 +66,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
     try {
       await login({ email, password });
+
+      if (saveCredentials) {
+        const payload = JSON.stringify({ email, password, isChecked: true, saveCredentials: true });
+        localStorage.setItem('ehs_admin_saved_credentials', payload);
+        localStorage.setItem('rememberMe', payload);
+      } else {
+        localStorage.removeItem('ehs_admin_saved_credentials');
+        localStorage.removeItem('rememberMe');
+      }
+
       window.location.replace('/'); // Redirect to dashboard on success
     } catch (error) {
       const apiError = error as ApiError;
@@ -105,13 +130,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           >
             Password
           </label>
-          {/* <button
+          <button
             type="button"
             onClick={onSwitchToForgot}
             className="text-sm font-medium text-brand-500 hover:text-brand-600 transition-colors"
           >
             Forgot?
-          </button> */}
+          </button>
         </div>
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-brand-500 transition-colors">
@@ -139,6 +164,34 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           </button>
         </div>
         {errors.password && <p className="text-xs text-brand-500 ml-1">{errors.password}</p>}
+      </div>
+
+      <div className="flex items-center justify-between px-1 py-1">
+        <label
+          htmlFor="save-credentials"
+          className="flex items-center gap-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none"
+        >
+          <input
+            id="save-credentials"
+            type="checkbox"
+            checked={saveCredentials}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setSaveCredentials(checked);
+              if (!checked) {
+                localStorage.removeItem('ehs_admin_saved_credentials');
+                localStorage.removeItem('rememberMe');
+              }
+            }}
+            className="w-4.5 h-4.5 rounded border-gray-300 dark:border-navy-600 text-brand-500 focus:ring-brand-500/20 dark:bg-navy-800 transition-colors cursor-pointer accent-brand-500"
+          />
+          <span>Save Credentials</span>
+        </label>
+        {saveCredentials && email && password && (
+          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            ✓ Credentials Saved
+          </span>
+        )}
       </div>
 
       <button
