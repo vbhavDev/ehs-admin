@@ -22,7 +22,7 @@ export const RawSchemaInspector: React.FC<RawSchemaInspectorProps> = ({
   const { data: schemas, isLoading, error } = useFetchRawMongooseSchema();
   const [search, setSearch] = useState('');
   const [expandedModels, setExpandedModels] = useState<Record<string, boolean>>({
-    Registree: true, // Expand Registree by default
+    EndUser: true, // Expand EndUser by default
   });
 
   const toggleModel = (modelName: string) => {

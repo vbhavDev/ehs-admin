@@ -193,18 +193,16 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ templateId, defaultC
       ev.includes('password') ||
       ev.includes('otp') ||
       ev.includes('invite') ||
-      ev.includes('org') ||
-      ev.includes('system_user')
+      ev.includes('system_user') ||
+      ev.includes('auth')
     ) {
       return 'SystemEvent';
     }
-    if (ev.startsWith('nomination')) return 'Nomination';
-    if (ev.startsWith('attendee') || ev.startsWith('registree')) return 'Registree';
-    if (ev.startsWith('blog')) return 'Blog';
-    if (ev.startsWith('contact')) return 'Contact';
-    if (ev.startsWith('sponsor')) return 'Sponsor';
-    if (ev.startsWith('event')) return 'Event';
-    if (ev.startsWith('website')) return 'Website';
+    if (ev.startsWith('org') || ev.startsWith('organization')) return 'Organization';
+    if (ev.startsWith('user') || ev.startsWith('end_user')) return 'EndUser';
+    if (ev.startsWith('invitation') || ev.startsWith('invite')) return 'Invitation';
+    if (ev.startsWith('subscription') || ev.startsWith('plan')) return 'Subscription';
+    if (ev.startsWith('currency')) return 'Currency';
     return 'SystemEvent';
   };
 

@@ -241,6 +241,26 @@ function shuffle<T>(source: T[]): T[] {
 }
 
 /**
+ * Balanced Color Hunt selection — `darkCount` dark + `lightCount` light
+ * palettes so the grid shows a real mix (not "5 dark + 1 light") and,
+ * when randomized, changes on every Shuffle. Keep `randomize=false` for the
+ * initial render so SSR/hydration never pick different sets per environment.
+ */
+function pickBalancedColorHuntSet(
+  pool: ColorHuntPreset[],
+  darkCount = 3,
+  lightCount = 3,
+  randomize = false,
+): ColorHuntPreset[] {
+  const darks = pool.filter((p) => p.mode === 'dark');
+  const lights = pool.filter((p) => p.mode === 'light');
+  if (randomize) {
+    return [...shuffle(darks).slice(0, darkCount), ...shuffle(lights).slice(0, lightCount)];
+  }
+  return [...darks.slice(0, darkCount), ...lights.slice(0, lightCount)];
+}
+
+/**
  * Color-hunt search matcher — true when the palette name OR any of its 4 hex
  * codes matches the query (name is case-insensitive; hex ignores leading '#').
  */
@@ -265,11 +285,11 @@ export function ClientThemeTab() {
   const [changeSummary, setChangeSummary] = useState('');
   const [customColorHuntInput, setCustomColorHuntInput] = useState('');
   const [customInputError, setCustomInputError] = useState('');
-  // Color Hunt section — search filter (name/hex) + shuffleable card order
+  // Color Hunt section — search filter (name/hex) + balanced shuffleable set
   const [paletteSearch, setPaletteSearch] = useState('');
-  const [paletteOrder, setPaletteOrder] = useState<ColorHuntPreset[]>(() => [
-    ...COLOR_HUNT_PRESETS,
-  ]);
+  const [paletteOrder, setPaletteOrder] = useState<ColorHuntPreset[]>(
+    () => pickBalancedColorHuntSet(COLOR_HUNT_PRESETS, 3, 3, false), // deterministic initial
+  );
 
   // Initialize working draft from the server overview (existing draft wins)
   useEffect(() => {
@@ -292,9 +312,14 @@ export function ClientThemeTab() {
 
   const selectedTheme = draft.themes.find((t) => t.id === selectedThemeId) ?? draft.themes[0];
 
-  // Color Hunt section — search-filtered, in the current (shuffleable) order
-  const visiblePresets = paletteOrder.filter((p) => matchesPresetSearch(p, paletteSearch));
-  const handleShufflePalettes = () => setPaletteOrder((prev) => shuffle(prev));
+  // Search filters the FULL preset pool (so any palette can be found even if
+  // it isn't in the current balanced set); with no query we show the current
+  // balanced set.
+  const visiblePresets = paletteSearch.trim()
+    ? COLOR_HUNT_PRESETS.filter((p) => matchesPresetSearch(p, paletteSearch))
+    : paletteOrder;
+  const handleShufflePalettes = () =>
+    setPaletteOrder(pickBalancedColorHuntSet(COLOR_HUNT_PRESETS, 3, 3, true));
 
   const updateToken = (key: ThemeTokenKey, value: string) => {
     if (!selectedTheme) return;
