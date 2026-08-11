@@ -1,16 +1,21 @@
 'use client';
 
 import React from 'react';
-import { useAuthStore } from '@/store/auth.store';
 import { CommunicationProvidersTab } from '@/modules/communications/components/CommunicationProvidersTab';
 import { AlertTriangle } from 'lucide-react';
+import { hasPermission } from '@/lib/permissions';
 
 export default function ProvidersPluginsPage() {
-  const { user } = useAuthStore();
+  const isAllowed =
+    hasPermission('communications.providers.view') ||
+    hasPermission('communications.providers.manage') ||
+    hasPermission('communications.providers') ||
+    hasPermission('communications.*') ||
+    hasPermission('plugins.view') ||
+    hasPermission('plugins.manage') ||
+    hasPermission('plugins.*');
 
-  const isSuperAdmin = user?.role?.roleKey === 'super_admin';
-
-  if (!isSuperAdmin) {
+  if (!isAllowed) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 space-y-4">
         <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 flex items-center justify-center">
@@ -18,8 +23,8 @@ export default function ProvidersPluginsPage() {
         </div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">Access Denied</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-md">
-          Only users with the Super Admin role have permission to configure third-party integration
-          providers and plugins.
+          You do not have permission to view or configure third-party integration providers and
+          plugins.
         </p>
       </div>
     );
