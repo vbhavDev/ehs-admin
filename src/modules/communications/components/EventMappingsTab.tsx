@@ -10,7 +10,6 @@ import {
   CommunicationChannel,
   EventMappingTrigger,
 } from '../types/communication.types';
-import { useAuthStore } from '@/store/auth.store';
 import { DataTable, Column } from '@/components/ui/table/DataTable';
 import Badge from '@/components/ui/badge/Badge';
 import Button from '@/components/ui/button/Button';
@@ -29,11 +28,14 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { communicationService } from '@/services/communication.service';
+import { hasPermission } from '@/lib/permissions';
 
 export const EventMappingsTab: React.FC = () => {
   const router = useRouter();
-  const { user } = useAuthStore();
-  const isAuthorized = ['super_admin', 'admin'].includes(user?.role?.roleKey || '');
+  const isAuthorized =
+    hasPermission('communications.mappings.manage') ||
+    hasPermission('communications.mappings') ||
+    hasPermission('communications.*');
 
   const { mappings, isLoading, deleteMapping } = useEventMappings();
   const { templates } = useMessageTemplates({ limit: 150 });
