@@ -46,6 +46,12 @@ export const API_ENDPOINTS = {
     PLATFORM_SETTINGS: {
       BASE: '/admin/platform-settings',
     },
+    PLUGINS: {
+      BASE: '/admin/plugins',
+      BY_KEY: (key: string) => `/admin/plugins/${key}`,
+      TOGGLE: (key: string) => `/admin/plugins/${key}/toggle`,
+      TEST_CONNECTION: (key: string) => `/admin/plugins/${key}/test-connection`,
+    },
     COMMUNICATIONS: {
       LOGS: '/admin/communications/logs',
       LOG_BY_ID: (id: string) => `/admin/communications/logs/${id}`,
