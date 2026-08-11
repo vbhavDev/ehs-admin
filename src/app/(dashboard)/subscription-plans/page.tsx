@@ -1,11 +1,12 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { SubscriptionPlanTable } from '@/modules/subscription-plans/components/SubscriptionPlanTable';
+import { SubscriptionPlanGrid } from '@/modules/subscription-plans/components/SubscriptionPlanGrid';
+import { SubscriptionPlanReorder } from '@/modules/subscription-plans/components/SubscriptionPlanReorder';
 import { SubscriptionPlan } from '@/types/subscription-plan.types';
 import { useSubscriptionPlans } from '@/modules/subscription-plans/hooks/useSubscriptionPlans';
 import Button from '@/components/ui/button/Button';
-import { Plus } from 'lucide-react';
+import { Plus, ArrowUpDown } from 'lucide-react';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { useGlobalModal } from '@/hooks/useGlobalModal';
 
@@ -13,9 +14,14 @@ export default function SubscriptionPlansPage() {
   const router = useRouter();
   const { deletePlan } = useSubscriptionPlans();
   const { confirm } = useGlobalModal();
+  const [isReordering, setIsReordering] = useState(false);
 
   const handleCreate = () => {
     router.push('/subscription-plans/create');
+  };
+
+  const handleView = (plan: SubscriptionPlan) => {
+    router.push(`/subscription-plans/view/${plan.id}`);
   };
 
   const handleEdit = (plan: SubscriptionPlan) => {
@@ -38,22 +44,46 @@ export default function SubscriptionPlansPage() {
     <div className="p-4 sm:p-6 lg:p-8">
       <PageBreadcrumb pageTitle="Subscription Plans" />
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Manage Subscription Plans
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Subscription Plans
           </h1>
-          <p className="text-sm text-gray-500">
-            Define plan tiers, feature gates, usage limits, and multi-currency pricing
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Define plan tiers, feature gates, usage limits, and multi-currency pricing.
           </p>
         </div>
-        <Button onClick={handleCreate} className="flex items-center gap-2">
-          <Plus size={20} />
-          Add New Plan
-        </Button>
+        <div className="flex items-center gap-2">
+          {!isReordering && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsReordering(true)}
+              className="flex items-center gap-2"
+            >
+              <ArrowUpDown size={18} />
+              Arrange order
+            </Button>
+          )}
+          <Button onClick={handleCreate} className="flex items-center gap-2 shadow-theme-xs">
+            <Plus size={20} />
+            New Plan
+          </Button>
+        </div>
       </div>
 
-      <SubscriptionPlanTable onEdit={handleEdit} onDelete={handleDelete} />
+      {isReordering ? (
+        <div className="mx-auto max-w-3xl">
+          <SubscriptionPlanReorder onDone={() => setIsReordering(false)} />
+        </div>
+      ) : (
+        <SubscriptionPlanGrid
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onCreate={handleCreate}
+        />
+      )}
     </div>
   );
 }
