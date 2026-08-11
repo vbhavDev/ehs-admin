@@ -38,21 +38,10 @@ export function useSecurityProtection(): SecurityState {
 
     // All module routes containing sensitive data tables and detail views
     const protectedRoutes = [
-      '/currencies',
       '/organizations',
       '/end-users',
-      '/subscription-plans',
       '/users',
       '/roles-permission',
-      '/settings',
-      '/media',
-      '/communications',
-      '/sidebar-menu',
-      '/feature-toggle',
-      '/websites',
-      '/pages',
-      '/support-ticket',
-      '/deployments',
       '/system-user',
     ];
 
@@ -89,6 +78,8 @@ export function useSecurityProtection(): SecurityState {
 
   // 2. Right-click context menu prevention (allows context menu on inputs/textareas/editors)
   useEffect(() => {
+    if (!isProtectedPage) return;
+
     const handleContextMenu = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (
@@ -114,7 +105,7 @@ export function useSecurityProtection(): SecurityState {
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu, true);
     };
-  }, []);
+  }, [isProtectedPage]);
 
   // 3. Keyboard shortcut prevention (PrintScreen, Snipping tool, Save, Print, DevTools)
   useEffect(() => {

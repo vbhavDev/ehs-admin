@@ -91,14 +91,19 @@ export const SubscriptionPlanTable: React.FC<SubscriptionPlanTableProps> = ({
       accessor: (plan) => (
         <div className="flex flex-wrap gap-1.5">
           {plan.pricing && plan.pricing.length > 0 ? (
-            plan.pricing.map((p) => (
-              <span
-                key={p.currencyCode}
-                className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-navy-700 dark:text-gray-300"
-              >
-                {p.currencyCode} {p.priceMonthly}/mo
-              </span>
-            ))
+            plan.pricing.map((p) => {
+              const activeCycles = (p.cycles || [])
+                .filter((c) => c.status)
+                .map((c) => `${c.price}/${c.duration.substring(0, 3)}`);
+              return (
+                <span
+                  key={p.currencyCode}
+                  className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-navy-700 dark:text-gray-300"
+                >
+                  {p.currencyCode}: {activeCycles.length > 0 ? activeCycles.join(', ') : 'Free'}
+                </span>
+              );
+            })
           ) : (
             <span className="text-xs text-gray-400">No pricing set</span>
           )}

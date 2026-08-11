@@ -200,11 +200,23 @@ export const UpgradeSubscriptionModal: React.FC<UpgradeSubscriptionModalProps> =
 
       // Pre-fill pricing
       const inrPricing = targetPlan.pricing?.find((pr) => pr.currencyCode === 'INR');
-      if (inrPricing) {
-        if (durationOption === '1year' || durationOption === '2years') {
-          setPricingAmount(inrPricing.priceAnnual || 0);
+      if (inrPricing && inrPricing.cycles) {
+        let targetDuration = 'monthly';
+        if (durationOption === '3months') targetDuration = 'quarterly';
+        else if (durationOption === '6months') targetDuration = 'halfyearly';
+        else if (durationOption === '1year' || durationOption === '2years')
+          targetDuration = 'annual';
+
+        const cycle = inrPricing.cycles.find(
+          (c) =>
+            c.duration.toLowerCase() === targetDuration ||
+            c.duration.toLowerCase().includes(targetDuration),
+        );
+        if (cycle) {
+          setPricingAmount(durationOption === '2years' ? cycle.price * 2 : cycle.price);
         } else {
-          setPricingAmount(inrPricing.priceMonthly || 0);
+          const activeCycle = inrPricing.cycles.find((c) => c.status);
+          setPricingAmount(activeCycle ? activeCycle.price : 0);
         }
       }
 
@@ -323,14 +335,27 @@ export const UpgradeSubscriptionModal: React.FC<UpgradeSubscriptionModalProps> =
             {plans.map((p) => {
               const isSelected = chosenPlanId === p.id;
               const isCurrent = currentPlanId === p.id && hasActiveSubscription;
-              const monthlyPrice =
-                p.pricing?.find((pr) => pr.currencyCode === 'INR')?.priceMonthly || 0;
-              const annualPrice =
-                p.pricing?.find((pr) => pr.currencyCode === 'INR')?.priceAnnual || 0;
-              const displayPrice =
-                durationOption === '1year' || durationOption === '2years'
-                  ? annualPrice
-                  : monthlyPrice;
+              const inrPricing = p.pricing?.find((pr) => pr.currencyCode === 'INR');
+              let displayPrice = 0;
+              if (inrPricing && inrPricing.cycles) {
+                let targetDuration = 'monthly';
+                if (durationOption === '3months') targetDuration = 'quarterly';
+                else if (durationOption === '6months') targetDuration = 'halfyearly';
+                else if (durationOption === '1year' || durationOption === '2years')
+                  targetDuration = 'annual';
+
+                const cycle = inrPricing.cycles.find(
+                  (c) =>
+                    c.duration.toLowerCase() === targetDuration ||
+                    c.duration.toLowerCase().includes(targetDuration),
+                );
+                if (cycle) {
+                  displayPrice = durationOption === '2years' ? cycle.price * 2 : cycle.price;
+                } else {
+                  const activeCycle = inrPricing.cycles.find((c) => c.status);
+                  displayPrice = activeCycle ? activeCycle.price : 0;
+                }
+              }
 
               return (
                 <div

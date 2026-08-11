@@ -1,7 +1,13 @@
+export interface CyclePricing {
+  duration: string;
+  days: number;
+  status: boolean;
+  price: number;
+}
+
 export interface PlanPricing {
   currencyCode: string;
-  priceMonthly: number;
-  priceAnnual: number;
+  cycles: CyclePricing[];
 }
 
 export interface SubscriptionPlan {
