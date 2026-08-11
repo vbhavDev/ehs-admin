@@ -13,6 +13,7 @@ import Button from '@/components/ui/button/Button';
 import {
   SubscriptionPlan,
   PlanPricing,
+  CyclePricing,
   SUBSCRIPTION_PLAN_TIERS,
   SUBSCRIPTION_PLAN_TIER_LABELS,
 } from '@/types/subscription-plan.types';
@@ -43,7 +44,13 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
   const { currencies, isLoading: isLoadingCurrencies } = useCurrencies({ limit: 100 });
 
   const [features, setFeatures] = useState<string[]>(initialData?.features || []);
-  const [pricing, setPricing] = useState<PlanPricing[]>(initialData?.pricing || []);
+  const [pricing, setPricing] = useState<PlanPricing[]>(() => {
+    const rawPricing = initialData?.pricing || [];
+    return rawPricing.map((p) => ({
+      currencyCode: p.currencyCode || 'INR',
+      cycles: p.cycles || [],
+    }));
+  });
 
   const {
     register,
@@ -78,15 +85,71 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
   });
 
   const addPricingRow = () => {
-    setPricing((p) => [...p, { currencyCode: 'INR', priceMonthly: 0, priceAnnual: 0 }]);
+    setPricing((p) => [
+      ...p,
+      {
+        currencyCode: 'INR',
+        cycles: [
+          { duration: 'monthly', days: 30, status: true, price: 0 },
+          { duration: 'quarterly', days: 90, status: true, price: 0 },
+          { duration: 'halfyearly', days: 180, status: true, price: 0 },
+          { duration: 'annual', days: 365, status: true, price: 0 },
+        ],
+      },
+    ]);
   };
 
   const removePricingRow = (index: number) => {
     setPricing((p) => p.filter((_, i) => i !== index));
   };
 
-  const updatePricingRow = (index: number, field: keyof PlanPricing, value: string | number) => {
-    setPricing((p) => p.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+  const updatePricingRow = (
+    index: number,
+    field: keyof PlanPricing,
+    value: PlanPricing[keyof PlanPricing],
+  ) => {
+    setPricing((p) =>
+      p.map((row, i) => (i === index ? ({ ...row, [field]: value } as PlanPricing) : row)),
+    );
+  };
+
+  const addCycleToRow = (rowIndex: number) => {
+    setPricing((p) =>
+      p.map((row, i) => {
+        if (i !== rowIndex) return row;
+        const cycles = [...(row.cycles || [])];
+        cycles.push({ duration: 'custom', days: 30, status: true, price: 0 });
+        return { ...row, cycles };
+      }),
+    );
+  };
+
+  const removeCycleFromRow = (rowIndex: number, cycleIndex: number) => {
+    setPricing((p) =>
+      p.map((row, i) => {
+        if (i !== rowIndex) return row;
+        const cycles = (row.cycles || []).filter((_, cIdx) => cIdx !== cycleIndex);
+        return { ...row, cycles };
+      }),
+    );
+  };
+
+  const updateCycleInRow = (
+    rowIndex: number,
+    cycleIndex: number,
+    field: keyof CyclePricing,
+    value: CyclePricing[keyof CyclePricing],
+  ) => {
+    setPricing((p) =>
+      p.map((row, i) => {
+        if (i !== rowIndex) return row;
+        const cycles = (row.cycles || []).map((cycle, cIdx) => {
+          if (cIdx !== cycleIndex) return cycle;
+          return { ...cycle, [field]: value } as CyclePricing;
+        });
+        return { ...row, cycles };
+      }),
+    );
   };
 
   const onSubmit = async (data: PlanFormData) => {
@@ -250,7 +313,7 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
                   Multi-Currency Pricing
                 </h3>
                 <p className="text-xs text-gray-400 mt-1">
-                  Add price per currency (monthly / annual)
+                  Add price per currency (monthly / quarterly / half-yearly / annual)
                 </p>
               </div>
               <Button
@@ -271,52 +334,142 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
                 {pricing.map((row, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end rounded-xl border border-gray-200 dark:border-navy-700 p-4"
+                    className="flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-navy-700 p-4"
                   >
-                    <div className="sm:col-span-4 space-y-1.5">
-                      <Label htmlFor={`pricing-currency-${index}`}>Currency</Label>
-                      <Select
-                        options={currencyOptions}
-                        value={row.currencyCode}
-                        onChange={(value) =>
-                          updatePricingRow(index, 'currencyCode', value as string)
-                        }
-                        placeholder="Select Currency"
-                        disabled={isLoadingCurrencies}
-                      />
-                    </div>
-                    <div className="sm:col-span-3 space-y-1.5">
-                      <Label htmlFor={`pricing-monthly-${index}`}>Monthly Price</Label>
-                      <Input
-                        id={`pricing-monthly-${index}`}
-                        type="number"
-                        min={0}
-                        value={row.priceMonthly}
-                        onChange={(e) =>
-                          updatePricingRow(index, 'priceMonthly', Number(e.target.value))
-                        }
-                      />
-                    </div>
-                    <div className="sm:col-span-3 space-y-1.5">
-                      <Label htmlFor={`pricing-annual-${index}`}>Annual Price</Label>
-                      <Input
-                        id={`pricing-annual-${index}`}
-                        type="number"
-                        min={0}
-                        value={row.priceAnnual}
-                        onChange={(e) =>
-                          updatePricingRow(index, 'priceAnnual', Number(e.target.value))
-                        }
-                      />
-                    </div>
-                    <div className="sm:col-span-2 flex justify-end">
+                    <div className="flex items-center justify-between border-b border-gray-100 dark:border-navy-700 pb-3">
+                      <div className="w-64 space-y-1.5">
+                        <Label htmlFor={`pricing-currency-${index}`}>Currency</Label>
+                        <Select
+                          options={currencyOptions}
+                          value={row.currencyCode}
+                          onChange={(value) =>
+                            updatePricingRow(index, 'currencyCode', value as string)
+                          }
+                          placeholder="Select Currency"
+                          disabled={isLoadingCurrencies}
+                        />
+                      </div>
                       <button
                         type="button"
                         onClick={() => removePricingRow(index)}
-                        className="p-2 text-gray-400 hover:text-error-500 hover:bg-error-50 rounded-lg transition-colors"
+                        className="p-2 text-gray-400 hover:text-error-500 hover:bg-error-50 rounded-lg transition-colors mt-6"
                       >
                         <X size={18} />
                       </button>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Billing Cycles
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => addCycleToRow(index)}
+                          className="text-xs px-2.5 py-1 flex items-center gap-1"
+                        >
+                          <Plus size={12} /> Add Cycle
+                        </Button>
+                      </div>
+
+                      {(row.cycles || []).length === 0 ? (
+                        <p className="text-xs text-gray-400 italic pl-1">
+                          No cycles defined for this currency.
+                        </p>
+                      ) : (
+                        <div className="space-y-3">
+                          {(row.cycles || []).map((cycle, cycleIdx) => (
+                            <div
+                              key={cycleIdx}
+                              className="flex flex-wrap items-center gap-3 bg-gray-50/50 dark:bg-navy-900/50 p-3 rounded-xl border border-gray-100 dark:border-navy-800"
+                            >
+                              {/* Duration Name */}
+                              <div className="flex-1 min-w-[120px] space-y-1">
+                                <Label className="text-[10px] text-gray-400">Duration Name</Label>
+                                <Input
+                                  type="text"
+                                  placeholder="e.g. monthly"
+                                  value={cycle.duration}
+                                  onChange={(e) =>
+                                    updateCycleInRow(index, cycleIdx, 'duration', e.target.value)
+                                  }
+                                  className="h-9 text-xs"
+                                />
+                              </div>
+
+                              {/* Duration Days */}
+                              <div className="w-20 space-y-1">
+                                <Label className="text-[10px] text-gray-400">Days</Label>
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  placeholder="30"
+                                  value={cycle.days}
+                                  onChange={(e) =>
+                                    updateCycleInRow(
+                                      index,
+                                      cycleIdx,
+                                      'days',
+                                      Number(e.target.value),
+                                    )
+                                  }
+                                  className="h-9 text-xs"
+                                />
+                              </div>
+
+                              {/* Price */}
+                              <div className="w-28 space-y-1">
+                                <Label className="text-[10px] text-gray-400">
+                                  Price ({row.currencyCode})
+                                </Label>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  placeholder="0"
+                                  value={cycle.price}
+                                  onChange={(e) =>
+                                    updateCycleInRow(
+                                      index,
+                                      cycleIdx,
+                                      'price',
+                                      Number(e.target.value),
+                                    )
+                                  }
+                                  className="h-9 text-xs"
+                                />
+                              </div>
+
+                              {/* Active Status Toggle */}
+                              <div className="flex items-center gap-2 mt-4 px-2">
+                                <input
+                                  type="checkbox"
+                                  id={`cycle-status-${index}-${cycleIdx}`}
+                                  checked={cycle.status}
+                                  onChange={(e) =>
+                                    updateCycleInRow(index, cycleIdx, 'status', e.target.checked)
+                                  }
+                                  className="w-4 h-4 rounded border-gray-300 accent-brand-500 cursor-pointer"
+                                />
+                                <Label
+                                  htmlFor={`cycle-status-${index}-${cycleIdx}`}
+                                  className="text-xs mb-0 cursor-pointer"
+                                >
+                                  Active
+                                </Label>
+                              </div>
+
+                              {/* Delete cycle button */}
+                              <button
+                                type="button"
+                                onClick={() => removeCycleFromRow(index, cycleIdx)}
+                                className="p-1.5 text-gray-400 hover:text-error-500 hover:bg-error-50 dark:hover:bg-error-950/30 rounded-lg transition-colors mt-4"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

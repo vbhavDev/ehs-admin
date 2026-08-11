@@ -422,11 +422,22 @@ export const OrganizationSubscriptionSection: React.FC<OrganizationSubscriptionS
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plans.map((p) => {
             const isCurrent = currentPlanId === p.id && hasActiveSubscription;
-            const monthlyPrice =
-              p.pricing?.find((pr) => pr.currencyCode === 'INR')?.priceMonthly || 0;
-            const annualPrice =
-              p.pricing?.find((pr) => pr.currencyCode === 'INR')?.priceAnnual || 0;
-            const price = billingCycle === 'annual' ? annualPrice : monthlyPrice;
+            const inrPricing = p.pricing?.find((pr) => pr.currencyCode === 'INR');
+            let price = 0;
+            if (inrPricing && inrPricing.cycles) {
+              const targetDuration = billingCycle === 'annual' ? 'annual' : 'monthly';
+              const cycle = inrPricing.cycles.find(
+                (c) =>
+                  c.duration.toLowerCase() === targetDuration ||
+                  c.duration.toLowerCase().includes(targetDuration),
+              );
+              if (cycle) {
+                price = cycle.price;
+              } else {
+                const activeCycle = inrPricing.cycles.find((c) => c.status);
+                price = activeCycle ? activeCycle.price : 0;
+              }
+            }
 
             return (
               <div
