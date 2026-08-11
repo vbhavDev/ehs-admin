@@ -30,10 +30,43 @@ import {
   Database,
   Loader2,
   AlertCircle,
+  Zap,
+  Building2,
+  ShieldCheck,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CATEGORY_TABS = [
+  {
+    id: VariableCategoryGroup.SYSTEM_EVENT,
+    label: 'System Events',
+    icon: Zap,
+    defaultModel: 'SystemEvent',
+  },
+  {
+    id: VariableCategoryGroup.END_USER,
+    label: 'End User',
+    icon: UserCheck,
+    defaultModel: 'EndUser',
+  },
+  {
+    id: VariableCategoryGroup.ORGANIZATION,
+    label: 'Organization',
+    icon: Building2,
+    defaultModel: 'Organization',
+  },
+  {
+    id: VariableCategoryGroup.INVITATION,
+    label: 'Invitation',
+    icon: Mail,
+    defaultModel: 'Invitation',
+  },
+  {
+    id: VariableCategoryGroup.SYSTEM_USER,
+    label: 'Admin Users',
+    icon: ShieldCheck,
+    defaultModel: 'SystemUser',
+  },
   {
     id: VariableCategoryGroup.REGISTRATION,
     label: 'Registration',
@@ -52,13 +85,6 @@ const CATEGORY_TABS = [
   { id: VariableCategoryGroup.SPONSOR, label: 'Sponsor', icon: Heart, defaultModel: 'Sponsor' },
   { id: VariableCategoryGroup.WEBSITE, label: 'Website', icon: Globe, defaultModel: 'Website' },
   { id: VariableCategoryGroup.SYSTEM, label: 'System', icon: Cpu, defaultModel: 'System' },
-  { id: VariableCategoryGroup.REPORT, label: 'Report', icon: FileText, defaultModel: 'Report' },
-  {
-    id: VariableCategoryGroup.ATTENDEE,
-    label: 'Attendee',
-    icon: UserCheck,
-    defaultModel: 'Attendee',
-  },
   { id: VariableCategoryGroup.OTHER, label: 'Other', icon: HelpCircle, defaultModel: 'Other' },
 ];
 

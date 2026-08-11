@@ -1,7 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Check, History, Loader2, Moon, Rocket, Save, Sparkles, Sun, Wand2 } from 'lucide-react';
+import {
+  Check,
+  History,
+  Loader2,
+  Moon,
+  RefreshCw,
+  Rocket,
+  Save,
+  Search,
+  Sparkles,
+  Sun,
+  Wand2,
+} from 'lucide-react';
 import Button from '@/components/ui/button/Button';
 import Switch from '@/components/form/switch/Switch';
 import Input from '@/components/form/input/InputField';
@@ -218,6 +230,29 @@ function ColorHuntPresetCard({
 /** Deep clone helper — draft edits must never mutate the query cache. */
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
 
+/** Randomize an array's order (Fisher–Yates). Returns a NEW array. */
+function shuffle<T>(source: T[]): T[] {
+  const arr = [...source];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j]!, arr[i]!];
+  }
+  return arr;
+}
+
+/**
+ * Color-hunt search matcher — true when the palette name OR any of its 4 hex
+ * codes matches the query (name is case-insensitive; hex ignores leading '#').
+ */
+function matchesPresetSearch(preset: ColorHuntPreset, rawQuery: string): boolean {
+  const query = rawQuery.trim().toLowerCase();
+  if (!query) return true;
+  if (preset.name.toLowerCase().includes(query)) return true;
+  const hexQuery = query.startsWith('#') ? query.slice(1) : query;
+  if (!hexQuery) return false;
+  return preset.colors.some((c) => c.toLowerCase().includes(hexQuery));
+}
+
 /**
  * Client Theme group — theme gallery, Color Hunt adapter, token editor, publish & rollback
  * (draft → preview → publish workflow, spec §20–22).
@@ -230,6 +265,11 @@ export function ClientThemeTab() {
   const [changeSummary, setChangeSummary] = useState('');
   const [customColorHuntInput, setCustomColorHuntInput] = useState('');
   const [customInputError, setCustomInputError] = useState('');
+  // Color Hunt section — search filter (name/hex) + shuffleable card order
+  const [paletteSearch, setPaletteSearch] = useState('');
+  const [paletteOrder, setPaletteOrder] = useState<ColorHuntPreset[]>(() => [
+    ...COLOR_HUNT_PRESETS,
+  ]);
 
   // Initialize working draft from the server overview (existing draft wins)
   useEffect(() => {
@@ -251,6 +291,10 @@ export function ClientThemeTab() {
   }
 
   const selectedTheme = draft.themes.find((t) => t.id === selectedThemeId) ?? draft.themes[0];
+
+  // Color Hunt section — search-filtered, in the current (shuffleable) order
+  const visiblePresets = paletteOrder.filter((p) => matchesPresetSearch(p, paletteSearch));
+  const handleShufflePalettes = () => setPaletteOrder((prev) => shuffle(prev));
 
   const updateToken = (key: ThemeTokenKey, value: string) => {
     if (!selectedTheme) return;
@@ -423,17 +467,52 @@ export function ClientThemeTab() {
           </div>
         </div>
 
-        {/* Color Hunt Presets Grid */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {COLOR_HUNT_PRESETS.map((preset) => (
-            <ColorHuntPresetCard
-              key={preset.id}
-              preset={preset}
-              onApplyToCurrent={handleApplyColorHuntPreset}
-              onAddAsNew={handleAddColorHuntAsNewTheme}
+        {/* Palette search + shuffle toolbar */}
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="w-full sm:max-w-xs">
+            <Input
+              value={paletteSearch}
+              onChange={(e) => setPaletteSearch(e.target.value)}
+              placeholder="Search by name or hex (e.g. emerald, #ffe66d)"
+              startIcon={<Search size={15} />}
+              className="text-xs"
             />
-          ))}
+          </div>
+          <div className="flex items-center justify-between gap-3 sm:justify-end">
+            <span className="whitespace-nowrap text-xs text-gray-400 dark:text-gray-500">
+              {visiblePresets.length} of {COLOR_HUNT_PRESETS.length} palettes
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleShufflePalettes}
+              startIcon={<RefreshCw size={14} />}
+              className="whitespace-nowrap"
+              title="Shuffle the color hunt palette order"
+            >
+              Shuffle
+            </Button>
+          </div>
         </div>
+
+        {/* Color Hunt Presets Grid */}
+        {visiblePresets.length > 0 ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {visiblePresets.map((preset) => (
+              <ColorHuntPresetCard
+                key={preset.id}
+                preset={preset}
+                onApplyToCurrent={handleApplyColorHuntPreset}
+                onAddAsNew={handleAddColorHuntAsNewTheme}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-xl border border-dashed border-gray-300 py-8 text-center text-sm text-gray-400 dark:border-navy-700 dark:text-gray-500">
+            No palettes match “{paletteSearch.trim()}”. Try a different name or hex code.
+          </p>
+        )}
       </div>
 
       {/* Theme gallery */}

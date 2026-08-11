@@ -60,4 +60,46 @@ export const pluginsService = {
       method: 'POST',
     });
   },
+
+  async getBrevoSenders(key: string): Promise<{
+    pluginKey: string;
+    senders: Array<{ id: number; name: string; email: string; active: boolean }>;
+    activeSenders: Array<{ id: number; name: string; email: string; active: boolean }>;
+    activeSenderId: number | null;
+    activeSenderEmail: string | null;
+    activeSenderName: string | null;
+    defaultSenderId?: number | null;
+    defaultSenderEmail?: string | null;
+    defaultSenderName?: string | null;
+  }> {
+    return apiFetch(`${API_ENDPOINTS.ADMIN.PLUGINS.BY_KEY(key)}/brevo-senders`, {
+      method: 'GET',
+    });
+  },
+
+  async setDefaultSender(
+    key: string,
+    data: { senderId: number; senderEmail: string; senderName?: string },
+  ): Promise<{ success: boolean; message: string; plugin: PluginItem }> {
+    return apiFetch(`${API_ENDPOINTS.ADMIN.PLUGINS.BY_KEY(key)}/default-sender`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async registerBrevoWebhook(
+    key: string,
+    url: string,
+  ): Promise<{ success: boolean; webhookId: number; url: string; plugin: PluginItem }> {
+    return apiFetch(`${API_ENDPOINTS.ADMIN.PLUGINS.BY_KEY(key)}/brevo-webhook`, {
+      method: 'POST',
+      body: JSON.stringify({ url }),
+    });
+  },
+
+  async unregisterBrevoWebhook(key: string): Promise<{ success: boolean; plugin: PluginItem }> {
+    return apiFetch(`${API_ENDPOINTS.ADMIN.PLUGINS.BY_KEY(key)}/brevo-webhook`, {
+      method: 'DELETE',
+    });
+  },
 };

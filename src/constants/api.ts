@@ -60,6 +60,9 @@ export const API_ENDPOINTS = {
       WEBHOOK_BY_ID: (id: string) => `/admin/communications/webhooks/${id}`,
     },
   },
+  PUBLIC: {
+    BRANDING: '/public/branding',
+  },
   SYSTEM: {
     TEST_CONNECTION: '/test-connection',
     HEALTH: '/health',

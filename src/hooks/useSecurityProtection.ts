@@ -25,19 +25,18 @@ export function useSecurityProtection(): SecurityState {
     // Root dashboard page '/' is an overview page, NOT a data table/view/update page
     if (pathname === '/') return false;
 
-    // Exclude creation and addition pages as requested
+    // Exclude creation, addition, edit, and update pages for copy-paste usability
     if (
-      pathname.endsWith('/create') ||
-      pathname.endsWith('/add') ||
-      pathname.endsWith('/new') ||
-      pathname.includes('/create/') ||
-      pathname.includes('/add/') ||
-      pathname.includes('/new/')
+      pathname.includes('/create') ||
+      pathname.includes('/add') ||
+      pathname.includes('/new') ||
+      pathname.includes('/edit') ||
+      pathname.includes('/update')
     ) {
       return false;
     }
 
-    // All module routes containing data tables, detail views, and update forms
+    // All module routes containing sensitive data tables and detail views
     const protectedRoutes = [
       '/currencies',
       '/organizations',
@@ -64,24 +63,15 @@ export function useSecurityProtection(): SecurityState {
     setIsBlurred(false);
   }, []);
 
-  // Helper to clear system clipboard
+  // Helper for clipboard operations (no-op to prevent overwriting user clipboard data)
   const clearClipboard = useCallback(() => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard
-        .writeText(
-          'Security Policy: Screenshot and clipboard exports are restricted on Admin Panel.',
-        )
-        .catch(() => {
-          // Ignore permission denial silently
-        });
-    }
+    // Intentionally no-op to allow system copy-paste across inputs and forms
   }, []);
 
   // Trigger screenshot warning banner & obscure screen
   const triggerScreenshotWarning = useCallback(() => {
     setScreenshotWarning(true);
     setIsBlurred(true);
-    clearClipboard();
 
     toast.error('Screenshots and screen captures are strictly blocked for security.', {
       id: 'screenshot-blocked-toast',
@@ -95,13 +85,25 @@ export function useSecurityProtection(): SecurityState {
       setScreenshotWarning(false);
       setIsBlurred(false);
     }, 3500);
-  }, [clearClipboard]);
+  }, []);
 
-  // 2. Right-click context menu prevention
+  // 2. Right-click context menu prevention (allows context menu on inputs/textareas/editors)
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable ||
+          target.closest('input') ||
+          target.closest('textarea') ||
+          target.closest('.monaco-editor'))
+      ) {
+        return; // Allow native context menu on input controls for copy/paste
+      }
+
       e.preventDefault();
-      clearClipboard();
       toast.error('Right-click context menu is disabled for security reasons.', {
         id: 'context-menu-disabled-toast',
         duration: 3000,
@@ -112,7 +114,7 @@ export function useSecurityProtection(): SecurityState {
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu, true);
     };
-  }, [clearClipboard]);
+  }, []);
 
   // 3. Keyboard shortcut prevention (PrintScreen, Snipping tool, Save, Print, DevTools)
   useEffect(() => {

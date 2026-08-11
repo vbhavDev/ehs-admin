@@ -8,8 +8,8 @@ interface AuthLayoutProps {
   subtitle?: string;
 }
 
-import Image from 'next/image';
 import Link from 'next/link';
+import BrandLogo from '@/components/common/BrandLogo';
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle }) => {
   return (
@@ -27,23 +27,14 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
               href="/"
               className="block transform hover:scale-105 transition-transform duration-300"
             >
-              {/* Light Mode Logo */}
-              <Image
-                src="/images/logo/logo.png"
-                alt="Core Media Logo"
+              {/* Platform logo (Platform Settings branding) with static fallback */}
+              <BrandLogo
+                alt="Platform Logo"
+                fallbackLight="/images/logo/logo.png"
+                fallbackDark="/images/logo/logo.png"
                 width={450}
                 height={150}
-                className="h-20 w-auto dark:hidden"
-                priority
-              />
-              {/* Dark Mode Logo */}
-              <Image
-                src="/images/logo/logo.png"
-                alt="Core Media Logo"
-                width={280}
-                height={84}
-                className="h-20 w-auto hidden dark:block"
-                priority
+                imgClassName="h-20 w-auto"
               />
             </Link>
           </div>

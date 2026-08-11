@@ -1,7 +1,6 @@
 'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '../context/SidebarContext';
 import { ChevronDownIcon, HorizontaLDots } from '../icons/index';
@@ -9,6 +8,7 @@ import SidebarUserProfile from './SidebarUserProfile';
 import SidebarSkeleton from './SidebarSkeleton';
 import { useNavigation, NavItem } from '@/hooks/useNavigation';
 import { DynamicIcon } from '@/components/ui/DynamicIcon';
+import BrandLogo from '@/components/common/BrandLogo';
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
@@ -238,31 +238,19 @@ const AppSidebar: React.FC = () => {
       <div className={`py-2 flex items-center justify-center`}>
         <Link href="/" className="flex items-center justify-center w-full">
           {isExpanded || isHovered || isMobileOpen ? (
-            <>
-              <Image
-                className="dark:hidden object-contain object-center scale-90"
-                src="/images/logo/logo.webp"
-                alt="Logo"
-                width={250}
-                height={100}
-                style={{ width: '180px', height: 'auto' }}
-                priority
-              />
-              <Image
-                className="hidden dark:block object-contain object-center scale-90"
-                src="/images/logo/logo-dark.webp"
-                alt="Logo"
-                width={250}
-                height={100}
-                style={{ width: '180px', height: 'auto' }}
-                priority
-              />
-            </>
+            <BrandLogo
+              variant="full"
+              fallbackLight="/images/logo/logo.webp"
+              fallbackDark="/images/logo/logo-dark.webp"
+              width={250}
+              height={100}
+              imgClassName="scale-90"
+              style={{ width: '180px', height: 'auto' }}
+            />
           ) : (
-            <Image
-              className="object-contain object-center"
-              src="/images/logo/logo-icon.png"
-              alt="Logo"
+            <BrandLogo
+              variant="icon"
+              fallbackIcon="/images/logo/logo-icon.png"
               width={40}
               height={40}
               style={{ width: 'auto', height: 'auto', maxHeight: '40px', maxWidth: '100%' }}
