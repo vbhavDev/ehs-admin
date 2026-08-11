@@ -1,11 +1,12 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { EndUserTable } from '@/modules/end-users/components/EndUserTable';
+import { InviteEndUserModal } from '@/modules/end-users/components/InviteEndUserModal';
 import { EndUser } from '@/types/end-user.types';
 import { useEndUsers } from '@/modules/end-users/hooks/useEndUsers';
 import Button from '@/components/ui/button/Button';
-import { Plus } from 'lucide-react';
+import { Plus, MailPlus } from 'lucide-react';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { useGlobalModal } from '@/hooks/useGlobalModal';
 
@@ -13,9 +14,14 @@ export default function EndUsersPage() {
   const router = useRouter();
   const { deleteEndUser } = useEndUsers();
   const { confirm } = useGlobalModal();
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   const handleCreate = () => {
     router.push('/end-users/create');
+  };
+
+  const handleView = (user: EndUser) => {
+    router.push(`/end-users/view/${user.id}`);
   };
 
   const handleEdit = (user: EndUser) => {
@@ -38,20 +44,35 @@ export default function EndUsersPage() {
     <div className="p-4 sm:p-6 lg:p-8">
       <PageBreadcrumb pageTitle="End Users" />
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Manage End Users</h1>
-          <p className="text-sm text-gray-500">
-            Cross-org view of all client-facing end users (individuals and org members)
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            End Users
+          </h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Cross-org view of all client-facing users — individuals and organization members.
           </p>
         </div>
-        <Button onClick={handleCreate} className="flex items-center gap-2">
-          <Plus size={20} />
-          Add New End User
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsInviteOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <MailPlus size={18} />
+            Invite User
+          </Button>
+          <Button onClick={handleCreate} className="flex items-center gap-2 shadow-theme-xs">
+            <Plus size={20} />
+            Add End User
+          </Button>
+        </div>
       </div>
 
-      <EndUserTable onEdit={handleEdit} onDelete={handleDelete} />
+      <EndUserTable onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />
+
+      <InviteEndUserModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
     </div>
   );
 }
