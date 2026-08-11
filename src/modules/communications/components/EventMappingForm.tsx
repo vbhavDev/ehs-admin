@@ -18,6 +18,7 @@ import { useCommunicationProviders } from '../hooks/useCommunicationProviders';
 import { communicationService } from '@/services/communication.service';
 import { Zap, ArrowLeft, Info, Eye, X, Plus, Trash2, AlertCircle, HelpCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { VariableTokenSidebar } from './VariableTokenSidebar';
 
 // ── System Event Search Combobox ──
 interface SystemEventComboboxProps {
@@ -946,6 +947,18 @@ export const EventMappingForm: React.FC<EventMappingFormProps> = ({ mappingId })
                 <li>Separate templates will be prepared and delivered concurrently.</li>
               </ul>
             </div>
+          </div>
+
+          {/* Token Explorer Sidebar */}
+          <div className="h-[480px]">
+            <VariableTokenSidebar
+              onSelectToken={(token) => {
+                navigator.clipboard.writeText(token).then(() => {
+                  toast.success(`Copied ${token} to clipboard!`);
+                });
+              }}
+              modelName="SystemEvent"
+            />
           </div>
         </div>
       </div>

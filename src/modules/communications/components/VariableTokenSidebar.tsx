@@ -17,11 +17,39 @@ import {
   Heart,
   Globe,
   Cpu,
+  Zap,
+  Building2,
+  ShieldCheck,
   HelpCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CATEGORY_META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  [VariableCategoryGroup.SYSTEM_EVENT]: {
+    label: 'System Events (OTP & Links)',
+    icon: Zap,
+    color: 'text-amber-500',
+  },
+  [VariableCategoryGroup.END_USER]: {
+    label: 'End User',
+    icon: UserCheck,
+    color: 'text-emerald-500',
+  },
+  [VariableCategoryGroup.ORGANIZATION]: {
+    label: 'Organization',
+    icon: Building2,
+    color: 'text-blue-500',
+  },
+  [VariableCategoryGroup.INVITATION]: {
+    label: 'Invitation',
+    icon: Mail,
+    color: 'text-indigo-500',
+  },
+  [VariableCategoryGroup.SYSTEM_USER]: {
+    label: 'System Admin',
+    icon: ShieldCheck,
+    color: 'text-purple-500',
+  },
   [VariableCategoryGroup.REGISTRATION]: {
     label: 'Registration',
     icon: UserCheck,
@@ -125,14 +153,17 @@ export const VariableTokenSidebar: React.FC<VariableTokenSidebarProps> = ({
   };
 
   const handleCopyToken = (path: string) => {
-    const token = `{{ ${path} }}`;
+    const token = `{{ params.${path} }}`;
     navigator.clipboard.writeText(token).then(() => {
-      toast.success(`Copied: ${token}`);
+      toast.success(`Copied ${token} to clipboard!`);
     });
   };
 
   const handleInsertToken = (path: string) => {
-    const token = `{{ ${path} }}`;
+    const token = `{{ params.${path} }}`;
+    navigator.clipboard.writeText(token).then(() => {
+      toast.success(`Copied ${token} to clipboard!`);
+    });
     onSelectToken(token);
   };
 

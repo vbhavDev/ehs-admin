@@ -31,6 +31,22 @@ export interface PlatformSettings {
   updatedAt: string;
 }
 
+/**
+ * Public platform branding — served WITHOUT auth so the login page can theme
+ * on the very first visit (before any local cache exists). Safe projection:
+ * colors + name + resolved logo/favicon CDN URLs only.
+ */
+export interface PublicBranding {
+  platformName: string;
+  tagline: string;
+  primaryColor: string;
+  accentColor: string;
+  defaultTheme: 'dark' | 'light' | 'system';
+  logo: string | null;
+  logoDark: string | null;
+  favicon: string | null;
+}
+
 /** Partial update — file fields accept a File ID string ('' clears the ref). */
 export interface UpdatePlatformSettingsData {
   logoFileId?: string;

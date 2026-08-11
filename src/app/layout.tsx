@@ -9,6 +9,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { ToasterProvider } from '@/components/providers/ToasterProvider';
 import { ModalProvider } from '@/context/ModalContext';
 import { GlobalModal } from '@/components/ui/modal/GlobalModal';
+import { ADMIN_THEME_BOOT_SCRIPT } from '@/lib/theme-boot';
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -38,6 +39,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${roboto.variable} ${openSans.variable}`}>
+      <head>
+        {/* Pre-paint brand restore — applies the cached colors from the
+            previous session (works on the logged-out login page too), so
+            there is no default-red flash while the settings fetch runs. */}
+        <script dangerouslySetInnerHTML={{ __html: ADMIN_THEME_BOOT_SCRIPT }} />
+      </head>
       <body className={`${openSans.className} dark:bg-gray-900`}>
         <ToasterProvider />
         <QueryProvider>

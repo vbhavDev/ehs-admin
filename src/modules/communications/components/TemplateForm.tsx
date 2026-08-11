@@ -8,9 +8,12 @@ import {
   UpdateMessageTemplateDto,
   CommunicationChannel,
   SchemaDiscoveryResult,
+  VariableCategoryGroup,
 } from '../types/communication.types';
 import { useMessageTemplates, useMessageTemplate } from '../hooks/useMessageTemplates';
 import { useSystemEvents } from '../hooks/useSystemEvents';
+import { useFetchVariables } from '../hooks/useVariables';
+import { VariableTokenSidebar } from './VariableTokenSidebar';
 import { communicationService } from '@/services/communication.service';
 import { ShieldQuestion, Copy, Zap, ArrowLeft, Info, Eye, X, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -152,7 +155,7 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ templateId, defaultC
   const queryChannel = searchParams?.get('channel') as CommunicationChannel | undefined;
 
   const { createTemplate, isCreating, updateTemplate, isUpdating } = useMessageTemplates();
-  const { events } = useSystemEvents();
+  const { events, payloadRegistry } = useSystemEvents();
   const isEdit = !!templateId;
 
   // Fetch data if editing
@@ -175,9 +178,26 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ templateId, defaultC
   const [isActive, setIsActive] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const { data: registeredVarsResponse } = useFetchVariables({ limit: 1000, isActive: true });
+  const allRegisteredVariables = useMemo(
+    () => registeredVarsResponse?.data || [],
+    [registeredVarsResponse],
+  );
+
   const getAutoSchemaForEvent = (event: string): string => {
     if (!event) return '';
     const ev = event.toLowerCase();
+    if (
+      ev.includes('signup') ||
+      ev.includes('verification') ||
+      ev.includes('password') ||
+      ev.includes('otp') ||
+      ev.includes('invite') ||
+      ev.includes('org') ||
+      ev.includes('system_user')
+    ) {
+      return 'SystemEvent';
+    }
     if (ev.startsWith('nomination')) return 'Nomination';
     if (ev.startsWith('attendee') || ev.startsWith('registree')) return 'Registree';
     if (ev.startsWith('blog')) return 'Blog';
@@ -185,7 +205,79 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ templateId, defaultC
     if (ev.startsWith('sponsor')) return 'Sponsor';
     if (ev.startsWith('event')) return 'Event';
     if (ev.startsWith('website')) return 'Website';
-    return '';
+    return 'SystemEvent';
+  };
+
+  const systemEventVariables = useMemo(() => {
+    const eventVars: { field: string; label: string; description: string }[] = [];
+    const addedFields = new Set<string>();
+
+    // 1. Add fields from payloadRegistry if matching linkedEvent
+    if (linkedEvent && payloadRegistry[linkedEvent]) {
+      payloadRegistry[linkedEvent].forEach(
+        (item: { field?: string; key?: string; description?: string }) => {
+          const fieldName = item.field || item.key;
+          if (fieldName && !addedFields.has(fieldName)) {
+            addedFields.add(fieldName);
+            eventVars.push({
+              field: fieldName,
+              label: fieldName,
+              description: item.description || `Event payload parameter: ${fieldName}`,
+            });
+          }
+        },
+      );
+    }
+
+    // 2. Add registered CommunicationVariables matching SYSTEM_EVENT or SystemEvent model
+    allRegisteredVariables.forEach((v) => {
+      if (
+        (v.categoryGroup === VariableCategoryGroup.SYSTEM_EVENT ||
+          v.modelName === 'SystemEvent' ||
+          (linkedEvent &&
+            (v.categoryGroup === VariableCategoryGroup.END_USER ||
+              v.categoryGroup === VariableCategoryGroup.ORGANIZATION))) &&
+        !addedFields.has(v.path)
+      ) {
+        addedFields.add(v.path);
+        eventVars.push({
+          field: v.path,
+          label: v.name || v.path,
+          description: v.description || `System Event Variable: ${v.path}`,
+        });
+      }
+    });
+
+    // 3. Fallback standard System Event variables if none registered yet
+    const standardFallback: { field: string; label: string; description: string }[] = [
+      { field: 'otp', label: 'OTP Code', description: 'One-time authentication passcode' },
+      { field: 'verifyLink', label: 'Verify Link', description: 'User verification URL' },
+      { field: 'resetLink', label: 'Reset Link', description: 'Password reset URL' },
+      { field: 'inviteLink', label: 'Invite Link', description: 'Organization or user invite URL' },
+      { field: 'orgName', label: 'Organization Name', description: 'Target organization name' },
+      { field: 'companyName', label: 'Company Name', description: 'Company legal or trade name' },
+      { field: 'email', label: 'Email Address', description: 'Recipient user email' },
+      { field: 'fullName', label: 'Full Name', description: 'Recipient full name' },
+      { field: 'role', label: 'Assigned Role', description: 'User or org member role' },
+      { field: 'expiresAt', label: 'Expiry Date', description: 'Passcode or link expiration' },
+    ];
+
+    standardFallback.forEach((item) => {
+      if (!addedFields.has(item.field)) {
+        addedFields.add(item.field);
+        eventVars.push(item);
+      }
+    });
+
+    return eventVars;
+  }, [linkedEvent, payloadRegistry, allRegisteredVariables]);
+
+  const handleInsertTokenFromSidebar = (tokenPath: string) => {
+    const cleanPath = tokenPath
+      .replace(/^\{\{\s*/, '')
+      .replace(/\s*\}\}$/, '')
+      .replace(/^params\./, '');
+    handleVariableChipClick(cleanPath);
   };
 
   useEffect(() => {
@@ -589,40 +681,41 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ templateId, defaultC
             </div>
 
             {/* Event or Schema dynamic variables list inside the main card */}
-            {baseSchema ? (
+            {baseSchema || linkedEvent || systemEventVariables.length > 0 ? (
               <div className="p-5 bg-gradient-to-br from-brand-500/5 to-indigo-500/5 rounded-2xl border border-brand-100 dark:border-brand-500/25 space-y-4">
-                <div className="flex items-center justify-between border-b border-gray-200/50 dark:border-navy-800 pb-2">
-                  <div className="flex items-center gap-2">
-                    <Zap size={14} className="text-brand-500 animate-pulse" />
-                    <span className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wide">
-                      Base Fields:
-                      <code className="bg-brand-50 dark:bg-brand-500/10 px-1.5 py-0.5 rounded text-brand-600 dark:text-brand-400 font-mono text-xs ml-1.5">
-                        {baseSchema}
-                      </code>
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                    Click to insert variable
-                  </span>
-                </div>
+                {/* 1. System Event Variables Chips (OTP, verification links, reset links, payload) */}
+                {systemEventVariables.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between border-b border-gray-200/50 dark:border-navy-800 pb-2">
+                      <div className="flex items-center gap-2">
+                        <Zap size={14} className="text-amber-500 animate-pulse" />
+                        <span className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wide">
+                          System Event Variables:
+                          {linkedEvent && (
+                            <code className="bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded text-amber-600 dark:text-amber-400 font-mono text-xs ml-1.5">
+                              {linkedEvent}
+                            </code>
+                          )}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                        Click chip to insert token into template
+                      </span>
+                    </div>
 
-                {/* Render Base Schema Fields */}
-                {schemaVariables.filter((v) => !v.isRelation).length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {schemaVariables
-                      .filter((v) => !v.isRelation)
-                      .map((v) => {
+                    <div className="flex flex-wrap gap-2">
+                      {systemEventVariables.map((v) => {
                         const isActiveChip = parsedVars.includes(v.field);
                         return (
                           <button
                             key={v.field}
                             type="button"
                             onClick={() => handleVariableChipClick(v.field)}
-                            title={`${v.description} (${v.type}) — Click to insert`}
+                            title={`${v.description} — Click to insert`}
                             className={`group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all cursor-pointer shadow-sm ${
                               isActiveChip
-                                ? 'bg-brand-500 text-white border border-brand-600 shadow-md font-bold'
-                                : 'bg-white dark:bg-navy-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-navy-700 hover:border-brand-400 hover:bg-brand-50 dark:hover:bg-brand-500/10'
+                                ? 'bg-amber-500 text-white border border-amber-600 shadow-md font-bold'
+                                : 'bg-white dark:bg-navy-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-navy-700 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10'
                             }`}
                           >
                             <Copy
@@ -630,21 +723,82 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ templateId, defaultC
                               className={
                                 isActiveChip
                                   ? 'text-white'
-                                  : 'text-gray-400 group-hover:text-brand-500 transition-colors'
+                                  : 'text-gray-400 group-hover:text-amber-500 transition-colors'
                               }
                             />
                             <span>{v.field}</span>
                             {isActiveChip && (
-                              <span className="text-[9px] bg-brand-600 px-1.5 py-0.2 rounded font-sans font-bold">
+                              <span className="text-[9px] bg-amber-600 px-1.5 py-0.2 rounded font-sans font-bold">
                                 Selected
                               </span>
                             )}
                           </button>
                         );
                       })}
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-xs text-gray-400 italic">No base variables found.</p>
+                )}
+
+                {/* 2. Render Base Database Schema Fields */}
+                {baseSchema && baseSchema !== 'SystemEvent' && (
+                  <div className="space-y-2 pt-2 border-t border-gray-200/50 dark:border-navy-800">
+                    <div className="flex items-center justify-between pb-2">
+                      <div className="flex items-center gap-2">
+                        <Zap size={14} className="text-brand-500" />
+                        <span className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wide">
+                          Base Schema Fields:
+                          <code className="bg-brand-50 dark:bg-brand-500/10 px-1.5 py-0.5 rounded text-brand-600 dark:text-brand-400 font-mono text-xs ml-1.5">
+                            {baseSchema}
+                          </code>
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                        Click to insert variable
+                      </span>
+                    </div>
+
+                    {schemaVariables.filter((v) => !v.isRelation).length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {schemaVariables
+                          .filter((v) => !v.isRelation)
+                          .map((v) => {
+                            const isActiveChip = parsedVars.includes(v.field);
+                            return (
+                              <button
+                                key={v.field}
+                                type="button"
+                                onClick={() => handleVariableChipClick(v.field)}
+                                title={`${v.description} (${v.type}) — Click to insert`}
+                                className={`group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all cursor-pointer shadow-sm ${
+                                  isActiveChip
+                                    ? 'bg-brand-500 text-white border border-brand-600 shadow-md font-bold'
+                                    : 'bg-white dark:bg-navy-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-navy-700 hover:border-brand-400 hover:bg-brand-50 dark:hover:bg-brand-500/10'
+                                }`}
+                              >
+                                <Copy
+                                  size={11}
+                                  className={
+                                    isActiveChip
+                                      ? 'text-white'
+                                      : 'text-gray-400 group-hover:text-brand-500 transition-colors'
+                                  }
+                                />
+                                <span>{v.field}</span>
+                                {isActiveChip && (
+                                  <span className="text-[9px] bg-brand-600 px-1.5 py-0.2 rounded font-sans font-bold">
+                                    Selected
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 italic">
+                        No base schema variables found.
+                      </p>
+                    )}
+                  </div>
                 )}
 
                 {/* Add-on Relation Fields (Schemas) */}
@@ -1002,6 +1156,14 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ templateId, defaultC
                 />
               </button>
             </div>
+          </div>
+
+          {/* Token Explorer Sidebar */}
+          <div className="h-[480px]">
+            <VariableTokenSidebar
+              onSelectToken={handleInsertTokenFromSidebar}
+              modelName={baseSchema || (linkedEvent ? 'SystemEvent' : undefined)}
+            />
           </div>
         </div>
       </div>

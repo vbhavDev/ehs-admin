@@ -77,7 +77,7 @@ export function CreatePluginModal({ isOpen, onClose, onCreate }: CreatePluginMod
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-99999 flex items-center justify-center bg-navy-950/60 backdrop-blur-sm p-4">
       <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-navy-800 shadow-2xl border border-gray-200 dark:border-navy-700 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-navy-700">
