@@ -2,6 +2,9 @@
   "name": "ehs-admin",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "dev:uat": "cp .env.dev .env.development.local && dotenv -e .env.dev -- next dev",
