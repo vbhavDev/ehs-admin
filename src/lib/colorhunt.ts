@@ -195,4 +195,62 @@ export const COLOR_HUNT_PRESETS: ColorHuntPreset[] = [
     colors: ['#2155cd', '#0aa1dd', '#79dae8', '#e8f9fd'],
     mode: 'light',
   },
+
+  /* ── Added for balanced dark/light variety on Shuffle ──────────────── */
+  {
+    id: 'mint-fresh',
+    name: 'Mint Fresh',
+    url: 'https://colorhunt.com/palette/f0f7f4b6e3d476c7b03aa87e',
+    colors: ['#f0f7f4', '#b6e3d4', '#76c7b0', '#3aa87e'],
+    mode: 'light',
+  },
+  {
+    id: 'blush-sand',
+    name: 'Blush Sand',
+    url: 'https://colorhunt.com/palette/fdf2f2fbd8d8f7a8a8e76f8a',
+    colors: ['#fdf2f2', '#fbd8d8', '#f7a8a8', '#e76f8a'],
+    mode: 'light',
+  },
+  {
+    id: 'lavender-fog',
+    name: 'Lavender Fog',
+    url: 'https://colorhunt.com/palette/f7f5ffded6f6b9a7ea8c6fe0',
+    colors: ['#f7f5ff', '#ded6f6', '#b9a7ea', '#8c6fe0'],
+    mode: 'light',
+  },
+  {
+    id: 'ocean-breeze',
+    name: 'Ocean Breeze',
+    url: 'https://colorhunt.com/palette/eaf6fbb7e0f263b7e02b87c4',
+    colors: ['#eaf6fb', '#b7e0f2', '#63b7e0', '#2b87c4'],
+    mode: 'light',
+  },
+  {
+    id: 'sunny-sorbet',
+    name: 'Sunny Sorbet',
+    url: 'https://colorhunt.com/palette/fff7e6ffe39affc85cff9e2c',
+    colors: ['#fff7e6', '#ffe39a', '#ffc85c', '#ff9e2c'],
+    mode: 'light',
+  },
+  {
+    id: 'royal-burgundy',
+    name: 'Royal Burgundy',
+    url: 'https://colorhunt.com/palette/1a0b2e5e2b68d14d72ffa43a',
+    colors: ['#1a0b2e', '#5e2b68', '#d14d72', '#ffa43a'],
+    mode: 'dark',
+  },
+  {
+    id: 'crimson-night',
+    name: 'Crimson Night',
+    url: 'https://colorhunt.com/palette/0d0d0d3c096c9d4eddff4d6d',
+    colors: ['#0d0d0d', '#3c096c', '#9d4edd', '#ff4d6d'],
+    mode: 'dark',
+  },
+  {
+    id: 'deep-ocean-teal',
+    name: 'Deep Ocean Teal',
+    url: 'https://colorhunt.com/palette/0211140a3d461f7a8c65d6ce',
+    colors: ['#021114', '#0a3d46', '#1f7a8c', '#65d6ce'],
+    mode: 'dark',
+  },
 ];

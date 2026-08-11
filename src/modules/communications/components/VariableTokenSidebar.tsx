@@ -10,16 +10,16 @@ import {
   Layers,
   Search,
   UserCheck,
-  Award,
-  Calendar,
-  FileText,
   Mail,
-  Heart,
-  Globe,
   Cpu,
   Zap,
   Building2,
   ShieldCheck,
+  CreditCard,
+  Package,
+  Coins,
+  Lock,
+  UserCog,
   HelpCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -45,44 +45,34 @@ const CATEGORY_META: Record<string, { label: string; icon: React.ElementType; co
     icon: Mail,
     color: 'text-indigo-500',
   },
+  [VariableCategoryGroup.SUBSCRIPTION_PLAN]: {
+    label: 'Subscription Plan',
+    icon: CreditCard,
+    color: 'text-purple-500',
+  },
+  [VariableCategoryGroup.SUBSCRIPTION]: {
+    label: 'Subscription',
+    icon: Package,
+    color: 'text-sky-500',
+  },
+  [VariableCategoryGroup.CURRENCY]: {
+    label: 'Currency',
+    icon: Coins,
+    color: 'text-yellow-500',
+  },
   [VariableCategoryGroup.SYSTEM_USER]: {
     label: 'System Admin',
     icon: ShieldCheck,
     color: 'text-purple-500',
   },
-  [VariableCategoryGroup.REGISTRATION]: {
-    label: 'Registration',
-    icon: UserCheck,
-    color: 'text-emerald-500',
-  },
-  [VariableCategoryGroup.NOMINATION]: {
-    label: 'Nomination',
-    icon: Award,
-    color: 'text-amber-500',
-  },
-  [VariableCategoryGroup.EVENT]: {
-    label: 'Event',
-    icon: Calendar,
-    color: 'text-blue-500',
-  },
-  [VariableCategoryGroup.BLOG]: {
-    label: 'Blog',
-    icon: FileText,
-    color: 'text-violet-500',
-  },
-  [VariableCategoryGroup.CONTACT]: {
-    label: 'Contact',
-    icon: Mail,
-    color: 'text-pink-500',
-  },
-  [VariableCategoryGroup.SPONSOR]: {
-    label: 'Sponsor',
-    icon: Heart,
+  [VariableCategoryGroup.AUTH]: {
+    label: 'Auth',
+    icon: Lock,
     color: 'text-rose-500',
   },
-  [VariableCategoryGroup.WEBSITE]: {
-    label: 'Website',
-    icon: Globe,
+  [VariableCategoryGroup.ROLE]: {
+    label: 'Role',
+    icon: UserCog,
     color: 'text-cyan-500',
   },
   [VariableCategoryGroup.SYSTEM]: {

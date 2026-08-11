@@ -77,17 +77,16 @@ const SystemEventCombobox: React.FC<SystemEventComboboxProps> = ({
 
   const categoryLabels: Record<string, string> = {
     auth: 'Authentication',
+    end_user: 'End Users',
+    organization: 'Organizations',
+    invitation: 'Invitations',
+    subscription: 'Subscriptions',
+    subscription_plan: 'Subscription Plans',
+    currency: 'Currencies',
     system_user: 'System Users',
-    attendee: 'Attendees',
-    event: 'Event Management',
-    blog: 'Blogs',
-    contact: 'Contacts',
-    sponsor: 'Sponsors',
-    nomination: 'Nominations',
-    website: 'Websites',
-    report: 'Reports',
     communication: 'Communications',
     file: 'Files',
+    system: 'System Events',
   };
 
   return (

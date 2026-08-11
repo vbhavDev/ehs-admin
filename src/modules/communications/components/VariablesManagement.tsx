@@ -14,12 +14,7 @@ import { RawSchemaInspector } from './RawSchemaInspector';
 import Button from '@/components/ui/button/Button';
 import {
   UserCheck,
-  Award,
-  Calendar,
-  FileText,
   Mail,
-  Heart,
-  Globe,
   Cpu,
   HelpCircle,
   Save,
@@ -33,6 +28,9 @@ import {
   Zap,
   Building2,
   ShieldCheck,
+  CreditCard,
+  Package,
+  Coins,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -62,35 +60,36 @@ const CATEGORY_TABS = [
     defaultModel: 'Invitation',
   },
   {
+    id: VariableCategoryGroup.SUBSCRIPTION_PLAN,
+    label: 'Subscription Plan',
+    icon: CreditCard,
+    defaultModel: 'SubscriptionPlan',
+  },
+  {
+    id: VariableCategoryGroup.SUBSCRIPTION,
+    label: 'Subscription',
+    icon: Package,
+    defaultModel: 'Subscription',
+  },
+  {
+    id: VariableCategoryGroup.CURRENCY,
+    label: 'Currency',
+    icon: Coins,
+    defaultModel: 'Currency',
+  },
+  {
     id: VariableCategoryGroup.SYSTEM_USER,
     label: 'Admin Users',
     icon: ShieldCheck,
     defaultModel: 'SystemUser',
   },
-  {
-    id: VariableCategoryGroup.REGISTRATION,
-    label: 'Registration',
-    icon: UserCheck,
-    defaultModel: 'Registree',
-  },
-  {
-    id: VariableCategoryGroup.NOMINATION,
-    label: 'Nomination',
-    icon: Award,
-    defaultModel: 'Nomination',
-  },
-  { id: VariableCategoryGroup.EVENT, label: 'Event', icon: Calendar, defaultModel: 'Event' },
-  { id: VariableCategoryGroup.BLOG, label: 'Blog', icon: FileText, defaultModel: 'Blog' },
-  { id: VariableCategoryGroup.CONTACT, label: 'Contact', icon: Mail, defaultModel: 'Contact' },
-  { id: VariableCategoryGroup.SPONSOR, label: 'Sponsor', icon: Heart, defaultModel: 'Sponsor' },
-  { id: VariableCategoryGroup.WEBSITE, label: 'Website', icon: Globe, defaultModel: 'Website' },
   { id: VariableCategoryGroup.SYSTEM, label: 'System', icon: Cpu, defaultModel: 'System' },
   { id: VariableCategoryGroup.OTHER, label: 'Other', icon: HelpCircle, defaultModel: 'Other' },
 ];
 
 export const VariablesManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<VariableCategoryGroup>(
-    VariableCategoryGroup.REGISTRATION,
+    VariableCategoryGroup.SYSTEM_EVENT,
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
@@ -483,7 +482,7 @@ export const VariablesManagement: React.FC = () => {
                             onChange={(e) =>
                               handleCellChange(variable.id!, 'modelName', e.target.value)
                             }
-                            placeholder="Model, e.g. Registree"
+                            placeholder="Model, e.g. EndUser"
                             title="Mongoose Schema collection owner"
                             className="w-1/2 bg-white dark:bg-navy-900 border border-gray-200 dark:border-navy-800 rounded-xl px-2.5 py-1.5 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all"
                           />
@@ -491,7 +490,7 @@ export const VariablesManagement: React.FC = () => {
                             type="text"
                             value={variable.ref || ''}
                             onChange={(e) => handleCellChange(variable.id!, 'ref', e.target.value)}
-                            placeholder="Ref, e.g. Website"
+                            placeholder="Ref, e.g. Organization"
                             title="Linked Reference schema if relational"
                             className="w-1/2 bg-white dark:bg-navy-900 border border-gray-200 dark:border-navy-800 rounded-xl px-2.5 py-1.5 text-xs font-mono text-gray-800 dark:text-gray-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all"
                           />

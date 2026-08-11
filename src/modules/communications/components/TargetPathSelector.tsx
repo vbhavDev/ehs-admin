@@ -18,18 +18,15 @@ function formatPathBreadcrumb(path: string): string {
     firstName: 'First Name',
     lastName: 'Last Name',
     fullName: 'Full Name',
-    nominatorId: 'Nominator',
-    registreeId: 'Registree',
-    attendeeId: 'Attendee',
-    eventId: 'Event',
-    sponsorId: 'Sponsor',
+    endUserId: 'End User',
     userId: 'User',
-    blogId: 'Blog',
-    websiteId: 'Website',
-    contactId: 'Contact',
-    nominatorEmail: 'Nominator Email',
-    nomineeEmails: 'Nominee Emails',
-    authorEmail: 'Author Email',
+    orgId: 'Organization',
+    organizationId: 'Organization',
+    invitationId: 'Invitation',
+    subscriptionId: 'Subscription',
+    planId: 'Subscription Plan',
+    currencyId: 'Currency',
+    systemUserId: 'System Admin',
   };
 
   const directMatch = labelMap[path];
@@ -54,13 +51,14 @@ function formatPathBreadcrumb(path: string): string {
 /** Map model names to emoji prefixes for visual grouping */
 function getModelIcon(modelName: string): string {
   const iconMap: Record<string, string> = {
-    Registree: '🎫',
-    Nomination: '🏆',
-    Event: '📅',
-    Blog: '📝',
-    Contact: '📬',
-    Sponsor: '💼',
-    Website: '🌐',
+    EndUser: '👤',
+    Organization: '🏢',
+    Invitation: '✉️',
+    SubscriptionPlan: '💳',
+    Subscription: '📦',
+    Currency: '🪙',
+    SystemUser: '🛡️',
+    SystemEvent: '⚡',
   };
   return iconMap[modelName] || '📌';
 }
