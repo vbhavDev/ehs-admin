@@ -62,7 +62,7 @@ export const SubscriptionPlanDetail: React.FC<SubscriptionPlanDetailProps> = ({
       value: formatPlanLimit(plan.maxImagesPerInspection),
       Icon: Images,
     },
-    { label: 'Video uploads', value: formatPlanLimit(plan.maxVideoUploads), Icon: Video },
+    { label: 'Video / inspection', value: formatPlanLimit(plan.maxVideoUploads), Icon: Video },
     { label: 'Plants / branches', value: formatPlanLimit(plan.maxPlants), Icon: Building2 },
     { label: 'Storage (GB)', value: formatPlanLimit(plan.maxStorageGB), Icon: HardDrive },
   ];

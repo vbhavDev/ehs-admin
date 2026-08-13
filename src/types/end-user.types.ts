@@ -1,8 +1,29 @@
+export interface SubscriptionPlanSummary {
+  id: string;
+  name: string;
+  tier: string;
+}
+
+export interface PopulatedSubscription {
+  id: string;
+  status: string;
+  planId?: SubscriptionPlanSummary | string | null;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  cancelAtPeriodEnd?: boolean;
+  currencyCode?: string;
+  amountPaid?: number;
+  paymentProvider?: string;
+  createdAt?: string;
+}
+
 export interface OrgMembership {
   orgId: string;
   role: string;
   status: string;
   joinedAt?: string;
+  /** Org display name surfaced by the backend transform when populated (findOne). */
+  orgName?: string;
 }
 
 export interface EndUser {
@@ -10,7 +31,7 @@ export interface EndUser {
   email: string;
   fullName: string;
   isIndividualSubscriber: boolean;
-  individualSubscriptionId?: { id: string; status: string } | string | null;
+  individualSubscriptionId?: PopulatedSubscription | string | null;
   orgMemberships: OrgMembership[];
   defaultOrgId?: string | null;
   isActive: boolean;
@@ -20,6 +41,8 @@ export interface EndUser {
   isPrivacyPolicyAccepted: boolean;
   privacyPolicyAcceptedAt?: string;
   lastLogin?: string;
+  storageLimitGB?: number;
+  storageUsedBytes?: number;
   profileImageFileId?: { id: string; url?: string; key?: string } | string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -91,4 +114,16 @@ export const ORG_MEMBERSHIP_STATUS_LABELS: Record<string, string> = {
   active: 'Active',
   pending_invite: 'Pending Invite',
   deactivated: 'Deactivated',
+};
+
+/** Mirrors backend `SubscriptionStatus` enum (`backend/src/common/enums/end-user.enum.ts`). */
+export const SUBSCRIPTION_STATUSES = ['active', 'cancelled', 'past_due', 'trialing'] as const;
+
+export type SubscriptionStatusValue = (typeof SUBSCRIPTION_STATUSES)[number];
+
+export const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
+  active: 'Active',
+  cancelled: 'Cancelled',
+  past_due: 'Past Due',
+  trialing: 'Trialing',
 };

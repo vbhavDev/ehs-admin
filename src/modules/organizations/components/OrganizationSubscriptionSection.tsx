@@ -3,13 +3,9 @@
 import React, { useState } from 'react';
 import {
   Crown,
-  ShieldCheck,
   Users,
-  CheckCircle2,
   TrendingUp,
   RefreshCw,
-  Sparkles,
-  ArrowRight,
   PlusCircle,
   AlertCircle,
   Factory,
@@ -31,9 +27,27 @@ export const OrganizationSubscriptionSection: React.FC<OrganizationSubscriptionS
   organization,
   onRefresh,
 }) => {
-  const { plans, isLoading: isPlansLoading } = useSubscriptionPlans({ isActive: true });
+  const { plans: rawPlans } = useSubscriptionPlans({ isActive: true });
 
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
+  // Filter & sort organization / enterprise plans in logical order flow
+  const TIER_ORDER_MAP: Record<string, number> = {
+    enterprise_starter: 1,
+    enterprise_pro: 2,
+    enterprise_custom: 3,
+    custom: 4,
+  };
+
+  const plans = (rawPlans || [])
+    .filter(
+      (p) => p.tier !== 'free' && p.tier !== 'individual_pro' && p.tier !== 'individual_business',
+    )
+    .sort((a, b) => {
+      const orderA = typeof a.order === 'number' ? a.order : (TIER_ORDER_MAP[a.tier] ?? 99);
+      const orderB = typeof b.order === 'number' ? b.order : (TIER_ORDER_MAP[b.tier] ?? 99);
+      if (orderA !== orderB) return orderA - orderB;
+      return 0;
+    });
+
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
   const [targetPlanId, setTargetPlanId] = useState<string | undefined>(undefined);
@@ -66,14 +80,18 @@ export const OrganizationSubscriptionSection: React.FC<OrganizationSubscriptionS
   const seatPercent = Math.min(100, Math.round((usedSeats / seatLimit) * 100));
 
   // Plants / Sites limit & usage
-  const siteCount = organization.siteCount || 0;
+  const siteCount = 1;
   const plantLimit = organization.maxSitesLimit || activePlanObj?.maxPlants || 3;
   const plantPercent =
     plantLimit === -1 ? 0 : Math.min(100, Math.round((siteCount / plantLimit) * 100));
 
   // Storage Allocation in GBs
   const storageLimitGB = organization.storageLimitGB || activePlanObj?.maxStorageGB || 10;
-  const storageUsedGB = (organization as { storageUsedGB?: number }).storageUsedGB || 0.25; // default simulated or actual usage
+  const rawBytes = organization.storageUsedBytes || 0;
+  const storageUsedGB =
+    rawBytes > 0
+      ? Number((rawBytes / (1024 * 1024 * 1024)).toFixed(2))
+      : (organization as { storageUsedGB?: number }).storageUsedGB || 0.25;
   const storagePercent =
     storageLimitGB === -1 ? 0 : Math.min(100, Math.round((storageUsedGB / storageLimitGB) * 100));
 
@@ -361,217 +379,6 @@ export const OrganizationSubscriptionSection: React.FC<OrganizationSubscriptionS
                 )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Available Plans Catalog Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Sparkles size={20} className="text-brand-500" />
-            <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
-              Subscription Plans Catalog
-            </h3>
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Compare resource limits for{' '}
-            <strong className="text-gray-700 dark:text-gray-300">User Seats</strong>,{' '}
-            <strong className="text-gray-700 dark:text-gray-300">Plants/Sites</strong>, and{' '}
-            <strong className="text-gray-700 dark:text-gray-300">Storage in GB</strong>.
-          </p>
-        </div>
-
-        {/* Billing Cycle Toggle */}
-        <div className="flex items-center p-1 bg-gray-100 dark:bg-navy-800 rounded-xl border border-gray-200 dark:border-navy-700">
-          <button
-            type="button"
-            onClick={() => setBillingCycle('monthly')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              billingCycle === 'monthly'
-                ? 'bg-white dark:bg-navy-900 text-brand-600 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            Monthly
-          </button>
-          <button
-            type="button"
-            onClick={() => setBillingCycle('annual')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              billingCycle === 'annual'
-                ? 'bg-brand-500 text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            Annual
-            <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-400 text-navy-950 font-black">
-              20% OFF
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* Plans Catalog Grid */}
-      {isPlansLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-96 rounded-3xl bg-gray-100 dark:bg-navy-800" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((p) => {
-            const isCurrent = currentPlanId === p.id && hasActiveSubscription;
-            const inrPricing = p.pricing?.find((pr) => pr.currencyCode === 'INR');
-            let price = 0;
-            if (inrPricing && inrPricing.cycles) {
-              const targetDuration = billingCycle === 'annual' ? 'annual' : 'monthly';
-              const cycle = inrPricing.cycles.find(
-                (c) =>
-                  c.duration.toLowerCase() === targetDuration ||
-                  c.duration.toLowerCase().includes(targetDuration),
-              );
-              if (cycle) {
-                price = cycle.price;
-              } else {
-                const activeCycle = inrPricing.cycles.find((c) => c.status);
-                price = activeCycle ? activeCycle.price : 0;
-              }
-            }
-
-            return (
-              <div
-                key={p.id}
-                className={`relative rounded-3xl border p-6 flex flex-col justify-between transition-all duration-300 ${
-                  isCurrent
-                    ? 'border-brand-500 bg-gradient-to-b from-brand-500/5 to-transparent dark:from-brand-500/10 dark:to-navy-800 shadow-xl shadow-brand-500/10 ring-2 ring-brand-500/30'
-                    : 'border-gray-200/80 dark:border-navy-700 bg-white dark:bg-navy-800 hover:border-gray-300 dark:hover:border-navy-600 hover:shadow-lg'
-                }`}
-              >
-                {isCurrent && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-0.5 rounded-full bg-brand-500 text-white font-black text-[10px] tracking-wider uppercase shadow-md shadow-brand-500/30 flex items-center gap-1">
-                    <CheckCircle2 size={12} />
-                    Current Active Tier
-                  </div>
-                )}
-
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-black text-gray-900 dark:text-white">{p.name}</h4>
-                    <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-navy-700 text-gray-600 dark:text-gray-300">
-                      {SUBSCRIPTION_PLAN_TIER_LABELS[p.tier] || p.tier}
-                    </span>
-                  </div>
-
-                  {/* Price */}
-                  <div className="mb-4">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-gray-900 dark:text-white">
-                        ₹{price.toLocaleString()}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                        /{billingCycle === 'annual' ? 'year' : 'month'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Organization Resource Limits: Seats, Plants, Storage GB */}
-                  <div className="space-y-2.5 border-t border-b border-gray-100 dark:border-navy-700 py-4 my-4">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500 flex items-center gap-1.5">
-                        <Users size={14} className="text-brand-500" /> Max User Seats:
-                      </span>
-                      <span className="font-extrabold text-gray-900 dark:text-white">
-                        {p.maxUsers === -1 ? 'Unlimited' : `${p.maxUsers} Seats`}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500 flex items-center gap-1.5">
-                        <Factory size={14} className="text-indigo-500" /> Plant / Site Limit:
-                      </span>
-                      <span className="font-extrabold text-gray-900 dark:text-white">
-                        {p.maxPlants === -1 ? 'Unlimited' : `${p.maxPlants || 3} Plants`}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500 flex items-center gap-1.5">
-                        <HardDrive size={14} className="text-emerald-500" /> Storage Limit:
-                      </span>
-                      <span className="font-extrabold text-gray-900 dark:text-white">
-                        {p.maxStorageGB === -1 ? 'Unlimited' : `${p.maxStorageGB || 10} GB`}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500 flex items-center gap-1.5">
-                        <ShieldCheck size={14} className="text-amber-500" /> Monthly Audits:
-                      </span>
-                      <span className="font-bold text-gray-900 dark:text-white">
-                        {p.maxInspectionsPerMonth === -1
-                          ? 'Unlimited'
-                          : `${p.maxInspectionsPerMonth} Audits`}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Features List */}
-                  <div className="space-y-2 mb-6">
-                    <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block">
-                      Included Features:
-                    </span>
-                    <ul className="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
-                      {(p.features && p.features.length > 0
-                        ? p.features
-                        : [
-                            'PDF Inspection Export',
-                            'Custom Checklists',
-                            'E-signatures',
-                            'AI Hazard Analysis',
-                          ]
-                      ).map((feat, idx) => (
-                        <li key={idx} className="flex items-center gap-2">
-                          <CheckCircle2 size={14} className="text-emerald-500 flex-shrink-0" />
-                          <span>{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                {/* Plan Card Footer Button */}
-                <Button
-                  onClick={() => handleOpenUpgrade(p.id)}
-                  disabled={isCurrent}
-                  className={`w-full py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all ${
-                    isCurrent
-                      ? 'bg-gray-100 dark:bg-navy-700 text-gray-400 dark:text-gray-500 cursor-not-allowed border-none'
-                      : !hasActiveSubscription
-                        ? 'bg-amber-500 hover:bg-amber-600 text-white font-extrabold shadow-md shadow-amber-500/20'
-                        : 'bg-brand-500 hover:bg-brand-600 text-white shadow-md shadow-brand-500/20'
-                  }`}
-                >
-                  {isCurrent ? (
-                    <>
-                      <CheckCircle2 size={16} />
-                      Current Active Plan
-                    </>
-                  ) : !hasActiveSubscription ? (
-                    <>
-                      <PlusCircle size={16} />
-                      Assign {p.name}
-                    </>
-                  ) : (
-                    <>
-                      Upgrade to {p.name}
-                      <ArrowRight size={16} />
-                    </>
-                  )}
-                </Button>
-              </div>
-            );
-          })}
         </div>
       )}
 

@@ -36,7 +36,7 @@ const LIMIT_ICONS = [
   { key: 'maxInspectionsPerMonth', label: 'Inspections / mo', Icon: ClipboardCheck },
   { key: 'maxUsers', label: 'Users', Icon: Users },
   { key: 'maxImagesPerInspection', label: 'Images / inspection', Icon: Images },
-  { key: 'maxVideoUploads', label: 'Video uploads', Icon: Video },
+  { key: 'maxVideoUploads', label: 'Video / inspection', Icon: Video },
   { key: 'maxPlants', label: 'Plants / branches', Icon: Building2 },
   { key: 'maxStorageGB', label: 'Storage (GB)', Icon: HardDrive },
 ] as const;

@@ -49,6 +49,47 @@ export const hasPermission = (permission: string): boolean => {
 };
 
 /**
+ * Reactive variant of {@link hasPermission} for client components.
+ *
+ * `hasPermission` reads `useAuthStore.getState()` once — it never re-evaluates
+ * after the persisted auth store rehydrates on the client, which causes
+ * permission-gated UI to flicker or stay hidden on first paint. This hook
+ * subscribes to the store and recomputes whenever permissions/role change.
+ */
+export const useHasPermission = (permission: string): boolean => {
+  const permissions = useAuthStore((s) => s.permissions);
+  const roleKey = useAuthStore((s) => s.user?.role?.roleKey);
+
+  return React.useMemo(() => {
+    if (!permission) return true;
+
+    if (roleKey === 'super_admin' || permissions?.includes('*') || permissions?.includes('*.*')) {
+      return true;
+    }
+
+    if (!permissions || !Array.isArray(permissions)) {
+      return false;
+    }
+
+    if (permissions.includes(permission)) {
+      return true;
+    }
+
+    const parts = permission.split('.');
+    if (parts.length > 1) {
+      if (permissions.includes(`${parts[0]}.*`)) {
+        return true;
+      }
+      if (parts.length > 2 && permissions.includes(`${parts[0]}.${parts[1]}.*`)) {
+        return true;
+      }
+    }
+
+    return false;
+  }, [permission, permissions, roleKey]);
+};
+
+/**
  * React component wrapper for permission-based rendering
  */
 export const Can = ({

@@ -11,8 +11,9 @@ import {
   ChevronLeft,
   ChevronRight,
   UserRound,
+  CreditCard,
 } from 'lucide-react';
-import { EndUser, END_USER_ROLE_LABELS } from '@/types/end-user.types';
+import { EndUser, PopulatedSubscription, END_USER_ROLE_LABELS } from '@/types/end-user.types';
 import { useEndUsers } from '../hooks/useEndUsers';
 
 interface EndUserTableProps {
@@ -59,7 +60,7 @@ const formatDate = (iso?: string) =>
 function RowSkeleton() {
   return (
     <tr className="animate-pulse">
-      {Array.from({ length: 6 }).map((_, i) => (
+      {Array.from({ length: 7 }).map((_, i) => (
         <td key={i} className="px-5 py-4">
           <div className="h-4 w-3/4 rounded bg-gray-100 dark:bg-navy-700" />
         </td>
@@ -117,6 +118,16 @@ export const EndUserTable: React.FC<EndUserTableProps> = ({ onView, onEdit, onDe
 
   const getActiveMemberships = (user: EndUser) =>
     (user.orgMemberships || []).filter((m) => m.status === 'active');
+
+  /** Extract populated subscription info if available. */
+  const getSubscriptionInfo = (user: EndUser) => {
+    const sub = user.individualSubscriptionId;
+    if (!sub || typeof sub === 'string') return null;
+    const populated = sub as PopulatedSubscription;
+    const planName =
+      populated.planId && typeof populated.planId === 'object' ? populated.planId.name : null;
+    return { status: populated.status, planName, periodEnd: populated.currentPeriodEnd };
+  };
 
   const FilterChip = <T extends string>({
     value,
@@ -201,7 +212,15 @@ export const EndUserTable: React.FC<EndUserTableProps> = ({ onView, onEdit, onDe
           <table className="w-full min-w-[760px] text-left">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/60 dark:border-navy-700 dark:bg-navy-900/40">
-                {['User', 'Type', 'Org Roles', 'Last login', 'Status', 'Actions'].map((h) => (
+                {[
+                  'User',
+                  'Type',
+                  'Subscription',
+                  'Org Roles',
+                  'Last login',
+                  'Status',
+                  'Actions',
+                ].map((h) => (
                   <th
                     key={h}
                     className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
@@ -220,7 +239,7 @@ export const EndUserTable: React.FC<EndUserTableProps> = ({ onView, onEdit, onDe
                 </>
               ) : endUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6}>
+                  <td colSpan={7}>
                     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
                       <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-500 dark:bg-brand-500/10">
                         <Users size={26} />
@@ -285,6 +304,37 @@ export const EndUserTable: React.FC<EndUserTableProps> = ({ onView, onEdit, onDe
                             Org Member
                           </span>
                         )}
+                      </td>
+
+                      {/* Subscription */}
+                      <td className="px-5 py-4">
+                        {(() => {
+                          const info = getSubscriptionInfo(user);
+                          if (!info) {
+                            return <span className="text-xs text-gray-400">—</span>;
+                          }
+                          const isActive = info.status === 'active' || info.status === 'trialing';
+                          return (
+                            <div className="flex flex-col gap-0.5">
+                              <span
+                                className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                  isActive
+                                    ? 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-400'
+                                    : info.status === 'past_due'
+                                      ? 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-400'
+                                      : 'bg-gray-100 text-gray-500 dark:bg-navy-700 dark:text-gray-400'
+                                }`}
+                              >
+                                <CreditCard size={12} />
+                                {info.planName || 'Plan'}
+                              </span>
+                              <span className="pl-0.5 text-[10px] text-gray-400 dark:text-gray-500">
+                                {isActive ? 'Active' : info.status.replace('_', ' ')}
+                                {info.periodEnd && ` · until ${formatDate(info.periodEnd)}`}
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </td>
 
                       {/* Org roles */}

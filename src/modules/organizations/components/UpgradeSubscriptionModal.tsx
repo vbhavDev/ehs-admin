@@ -11,9 +11,6 @@ import {
   Factory,
   HardDrive,
   PlusCircle,
-  FileText,
-  Image as ImageIcon,
-  Video,
   DollarSign,
   Layers,
   ChevronDown,
@@ -163,16 +160,37 @@ export const UpgradeSubscriptionModal: React.FC<UpgradeSubscriptionModalProps> =
     return res.toISOString().split('T')[0] || endDate || '';
   };
 
-  // Sync chosenPlanId from props
+  // Filter & sort ONLY organization/enterprise plans (exclude individual tiers)
+  const TIER_ORDER_MAP: Record<string, number> = {
+    enterprise_starter: 1,
+    enterprise_pro: 2,
+    enterprise_custom: 3,
+    custom: 4,
+  };
+
+  const organizationPlans = (plans || [])
+    .filter(
+      (p) => p.tier !== 'free' && p.tier !== 'individual_pro' && p.tier !== 'individual_business',
+    )
+    .sort((a, b) => {
+      const orderA = typeof a.order === 'number' ? a.order : (TIER_ORDER_MAP[a.tier] ?? 99);
+      const orderB = typeof b.order === 'number' ? b.order : (TIER_ORDER_MAP[b.tier] ?? 99);
+      if (orderA !== orderB) return orderA - orderB;
+      return 0;
+    });
+
+  // Sync chosenPlanId from props when modal opens or selectedPlanId changes
   useEffect(() => {
-    if (selectedPlanId) {
-      setChosenPlanId(selectedPlanId);
-    } else if (currentPlanId) {
-      setChosenPlanId(currentPlanId);
-    } else if (plans && plans.length > 0 && plans[0]?.id) {
-      setChosenPlanId(plans[0].id);
+    if (isOpen) {
+      if (selectedPlanId) {
+        setChosenPlanId(selectedPlanId);
+      } else if (currentPlanId) {
+        setChosenPlanId(currentPlanId);
+      } else if (organizationPlans && organizationPlans.length > 0 && organizationPlans[0]?.id) {
+        setChosenPlanId(organizationPlans[0].id);
+      }
     }
-  }, [selectedPlanId, currentPlanId, plans]);
+  }, [isOpen, selectedPlanId]);
 
   // Recalculate end date on start date or duration change
   useEffect(() => {
@@ -183,53 +201,52 @@ export const UpgradeSubscriptionModal: React.FC<UpgradeSubscriptionModalProps> =
   }, [startDate, durationOption]);
 
   const targetPlan =
-    plans.find((p) => p.id === chosenPlanId) || (plans && plans.length > 0 ? plans[0] : undefined);
+    organizationPlans.find((p) => p.id === chosenPlanId) ||
+    (organizationPlans && organizationPlans.length > 0 ? organizationPlans[0] : undefined);
 
-  // Populate plan defaults whenever chosenPlanId changes
+  // Auto-populate all form inputs whenever chosenPlanId changes
   useEffect(() => {
     if (targetPlan) {
-      if (targetPlan.maxUsers && targetPlan.maxUsers > 0) {
-        setCustomSeats(targetPlan.maxUsers);
-      }
-      if (targetPlan.maxPlants) {
-        setMaxSitesLimit(targetPlan.maxPlants);
-      }
-      if (targetPlan.maxStorageGB) {
-        setStorageLimitGB(targetPlan.maxStorageGB);
-      }
+      setCustomSeats(targetPlan.maxUsers ?? 10);
+      setMaxSitesLimit(targetPlan.maxPlants ?? 3);
+      setStorageLimitGB(targetPlan.maxStorageGB ?? 10);
+      setMaxInspectionsPerMonth(targetPlan.maxInspectionsPerMonth ?? -1);
+      setMaxImagesPerInspection(targetPlan.maxImagesPerInspection ?? 10);
+      setMaxVideoUploads(targetPlan.maxVideoUploads ?? 5);
 
       // Pre-fill pricing
-      const inrPricing = targetPlan.pricing?.find((pr) => pr.currencyCode === 'INR');
-      if (inrPricing && inrPricing.cycles) {
-        let targetDuration = 'monthly';
-        if (durationOption === '3months') targetDuration = 'quarterly';
-        else if (durationOption === '6months') targetDuration = 'halfyearly';
-        else if (durationOption === '1year' || durationOption === '2years')
-          targetDuration = 'annual';
+      if (targetPlan.isCustomPricing) {
+        setPricingAmount(0);
+      } else {
+        const inrPricing = targetPlan.pricing?.find((pr) => pr.currencyCode === 'INR');
+        if (inrPricing && inrPricing.cycles && inrPricing.cycles.length > 0) {
+          let targetDuration = 'monthly';
+          if (durationOption === '3months') targetDuration = 'quarterly';
+          else if (durationOption === '6months') targetDuration = 'halfyearly';
+          else if (durationOption === '1year' || durationOption === '2years')
+            targetDuration = 'annual';
 
-        const cycle = inrPricing.cycles.find(
-          (c) =>
-            c.duration.toLowerCase() === targetDuration ||
-            c.duration.toLowerCase().includes(targetDuration),
-        );
-        if (cycle) {
-          setPricingAmount(durationOption === '2years' ? cycle.price * 2 : cycle.price);
+          const cycle = inrPricing.cycles.find(
+            (c) =>
+              c.duration.toLowerCase() === targetDuration ||
+              c.duration.toLowerCase().includes(targetDuration),
+          );
+          if (cycle) {
+            setPricingAmount(durationOption === '2years' ? cycle.price * 2 : cycle.price);
+          } else {
+            const activeCycle = inrPricing.cycles.find((c) => c.status);
+            setPricingAmount(activeCycle ? activeCycle.price : 0);
+          }
         } else {
-          const activeCycle = inrPricing.cycles.find((c) => c.status);
-          setPricingAmount(activeCycle ? activeCycle.price : 0);
+          setPricingAmount(0);
         }
       }
 
-      // Pre-fill features if plan has features
+      // Pre-fill features from plan definition
       if (targetPlan.features && targetPlan.features.length > 0) {
-        // Match features or default
-        const matched = COVERAGE_FEATURE_OPTIONS.filter((opt) =>
-          targetPlan.features.some((f) => f.toLowerCase().includes(opt.id.toLowerCase())),
-        ).map((opt) => opt.id);
-
-        if (matched.length > 0) {
-          setSelectedFeatures(Array.from(new Set([...selectedFeatures, ...matched])));
-        }
+        setSelectedFeatures(targetPlan.features);
+      } else {
+        setSelectedFeatures(['OSHA Compliance', 'ISO 45001', 'General EHS Safety']);
       }
     }
   }, [chosenPlanId, durationOption]);
@@ -326,13 +343,18 @@ export const UpgradeSubscriptionModal: React.FC<UpgradeSubscriptionModalProps> =
 
         {/* 1. Base Plan Selector Grid */}
         <div className="space-y-3">
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-gray-200 flex items-center gap-2">
-            <Crown size={15} className="text-amber-500" />
-            1. Select Plan Tier Catalog:
-          </label>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-gray-200 flex items-center gap-2">
+              <Crown size={15} className="text-amber-500" />
+              1. Select Subscription Plan Template:
+            </label>
+            <span className="text-[11px] text-brand-600 dark:text-brand-400 font-semibold">
+              Auto-fills defaults — adjust any input below for extra limits
+            </span>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {plans.map((p) => {
+            {organizationPlans.map((p) => {
               const isSelected = chosenPlanId === p.id;
               const isCurrent = currentPlanId === p.id && hasActiveSubscription;
               const inrPricing = p.pricing?.find((pr) => pr.currencyCode === 'INR');
@@ -495,10 +517,10 @@ export const UpgradeSubscriptionModal: React.FC<UpgradeSubscriptionModalProps> =
         <div className="space-y-3">
           <label className="block text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-gray-200 flex items-center gap-2">
             <Layers size={16} className="text-indigo-500" />
-            3. Resource Quotas & Inspection Constraints:
+            3. Resource Quotas:
           </label>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* User Seats */}
             <div className="p-3.5 bg-gray-50 dark:bg-navy-900/60 rounded-xl border border-gray-100 dark:border-navy-700">
               <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
@@ -544,52 +566,6 @@ export const UpgradeSubscriptionModal: React.FC<UpgradeSubscriptionModalProps> =
                 className="w-full px-3 py-1.5 text-sm font-bold rounded-lg border border-gray-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-gray-900 dark:text-white"
               />
               <span className="text-[10px] text-gray-500 mt-1 block">Cloud media limit</span>
-            </div>
-
-            {/* Monthly Inspections */}
-            <div className="p-3.5 bg-gray-50 dark:bg-navy-900/60 rounded-xl border border-gray-100 dark:border-navy-700">
-              <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
-                <FileText size={14} className="text-amber-500" /> Reports / Inspection Count
-              </label>
-              <input
-                type="number"
-                value={maxInspectionsPerMonth}
-                onChange={(e) => setMaxInspectionsPerMonth(parseInt(e.target.value) || -1)}
-                className="w-full px-3 py-1.5 text-sm font-bold rounded-lg border border-gray-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-gray-900 dark:text-white"
-              />
-              <span className="text-[10px] text-gray-500 mt-1 block">-1 for Unlimited</span>
-            </div>
-
-            {/* Images per Inspection */}
-            <div className="p-3.5 bg-gray-50 dark:bg-navy-900/60 rounded-xl border border-gray-100 dark:border-navy-700">
-              <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
-                <ImageIcon size={14} className="text-blue-500" /> Photos per Inspection
-              </label>
-              <input
-                type="number"
-                min={1}
-                value={maxImagesPerInspection}
-                onChange={(e) =>
-                  setMaxImagesPerInspection(Math.max(1, parseInt(e.target.value) || 1))
-                }
-                className="w-full px-3 py-1.5 text-sm font-bold rounded-lg border border-gray-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-gray-900 dark:text-white"
-              />
-              <span className="text-[10px] text-gray-500 mt-1 block">Max photo upload limit</span>
-            </div>
-
-            {/* Videos per Inspection */}
-            <div className="p-3.5 bg-gray-50 dark:bg-navy-900/60 rounded-xl border border-gray-100 dark:border-navy-700">
-              <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
-                <Video size={14} className="text-rose-500" /> Inspection Videos
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={maxVideoUploads}
-                onChange={(e) => setMaxVideoUploads(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-full px-3 py-1.5 text-sm font-bold rounded-lg border border-gray-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-gray-900 dark:text-white"
-              />
-              <span className="text-[10px] text-gray-500 mt-1 block">Max video clips</span>
             </div>
           </div>
         </div>

@@ -11,7 +11,6 @@ import {
   ShieldCheck,
   FileCheck2,
   ScrollText,
-  CreditCard,
   CircleCheck,
   CircleX,
   Clock,
@@ -21,6 +20,7 @@ import {
   END_USER_ROLE_LABELS,
   ORG_MEMBERSHIP_STATUS_LABELS,
 } from '@/types/end-user.types';
+import { SubscriptionSection } from './SubscriptionSection';
 
 interface EndUserDetailProps {
   user: EndUser;
@@ -184,6 +184,14 @@ export const EndUserDetail: React.FC<EndUserDetailProps> = ({ user, onEdit, onBa
         </div>
       </div>
 
+      {/* Active subscription */}
+      <div className="mt-6">
+        <SubscriptionSection
+          subscription={subscription}
+          isIndividualSubscriber={user.isIndividualSubscriber}
+        />
+      </div>
+
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Account & access */}
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-theme-sm dark:border-navy-700 dark:bg-navy-800">
@@ -208,15 +216,6 @@ export const EndUserDetail: React.FC<EndUserDetailProps> = ({ user, onEdit, onBa
             </InfoRow>
             <InfoRow icon={<FileCheck2 size={16} />} label="Privacy accepted">
               <BoolPill value={user.isPrivacyPolicyAccepted} />
-            </InfoRow>
-            <InfoRow icon={<CreditCard size={16} />} label="Subscription">
-              {subscription ? (
-                <span className="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-semibold capitalize text-purple-600 dark:bg-purple-500/15 dark:text-purple-400">
-                  {subscription.status}
-                </span>
-              ) : (
-                <span className="text-sm text-gray-400">None</span>
-              )}
             </InfoRow>
           </ul>
         </section>
@@ -264,10 +263,11 @@ export const EndUserDetail: React.FC<EndUserDetailProps> = ({ user, onEdit, onBa
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                      {END_USER_ROLE_LABELS[m.role] || m.role}
+                      {m.orgName || `Org …${m.orgId.slice(-6)}`}
                     </p>
                     <p className="text-xs text-gray-400">
-                      {m.joinedAt ? `Joined ${formatDate(m.joinedAt)}` : `Org ${m.orgId.slice(-6)}`}
+                      {END_USER_ROLE_LABELS[m.role] || m.role}
+                      {m.joinedAt ? ` · Joined ${formatDate(m.joinedAt)}` : ''}
                     </p>
                   </div>
                   <span
