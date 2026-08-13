@@ -31,11 +31,19 @@ interface AssetMetadataFormProps {
 const MODULE_OPTIONS = [
   { value: 'media', label: 'Media Library' },
   { value: 'organizations', label: 'Organizations' },
+  { value: 'subscriptions', label: 'Subscriptions' },
+  { value: 'subscription_plans', label: 'Subscription Plans' },
+  { value: 'inspections', label: 'Inspections' },
+  { value: 'incidents', label: 'Incidents' },
   { value: 'communications', label: 'Communications' },
   { value: 'websites', label: 'Websites' },
   { value: 'plugins', label: 'Plugins' },
   { value: 'profile', label: 'Profile' },
   { value: 'branding', label: 'Branding' },
+  { value: 'documents', label: 'Documents' },
+  { value: 'reports', label: 'Reports' },
+  { value: 'teams', label: 'Teams' },
+  { value: 'general', label: 'General' },
 ];
 
 export const AssetMetadataForm: React.FC<AssetMetadataFormProps> = ({

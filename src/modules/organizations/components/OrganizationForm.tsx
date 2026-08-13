@@ -59,9 +59,6 @@ const step1Schema = z.object({
   contactPersonName: z.string().optional(),
   contactPersonEmail: z.string().email('Invalid email').optional().or(z.literal('')),
   contactPersonPhone: z.string().optional(),
-  employeeCount: z.coerce.number().min(0).optional(),
-  siteCount: z.coerce.number().min(0).optional(),
-  seatLimit: z.coerce.number().min(1, 'Seat limit must be at least 1').optional(),
   status: z.string().optional(),
   isActive: z.boolean(),
 });
@@ -139,9 +136,6 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({ initialData 
           contactPersonEmail: initialData.contactPersonEmail || '',
           contactPersonPhone: initialData.contactPersonPhone || '',
           gstin: initialData.gstin || '',
-          employeeCount: initialData.employeeCount || 0,
-          siteCount: initialData.siteCount || 0,
-          seatLimit: initialData.seatLimit ?? 10,
           status: initialData.status,
           isActive: initialData.isActive,
           street: initialData.address?.street || '',
@@ -159,9 +153,6 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({ initialData 
           contactPersonEmail: '',
           contactPersonPhone: '',
           gstin: '',
-          employeeCount: 0,
-          siteCount: 0,
-          seatLimit: 10,
           status: 'pending_setup',
           isActive: true,
           street: '',
@@ -245,24 +236,6 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({ initialData 
       contactPersonName: values.contactPersonName || undefined,
       contactPersonEmail: values.contactPersonEmail || undefined,
       contactPersonPhone: values.contactPersonPhone || undefined,
-      employeeCount:
-        values.employeeCount !== undefined &&
-        values.employeeCount !== null &&
-        (values.employeeCount as unknown) !== ''
-          ? Number(values.employeeCount)
-          : 0,
-      siteCount:
-        values.siteCount !== undefined &&
-        values.siteCount !== null &&
-        (values.siteCount as unknown) !== ''
-          ? Number(values.siteCount)
-          : 0,
-      seatLimit:
-        values.seatLimit !== undefined &&
-        values.seatLimit !== null &&
-        (values.seatLimit as unknown) !== ''
-          ? Number(values.seatLimit)
-          : 10,
       status: values.status,
       isActive: values.isActive,
     };
@@ -566,60 +539,6 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({ initialData 
                     {...register('domain')}
                     error={!!errors.domain}
                     hint={errors.domain?.message}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="seatLimit"
-                    className="font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    User Seat Quota (Max Seats)
-                  </Label>
-                  <Input
-                    id="seatLimit"
-                    type="number"
-                    min={1}
-                    placeholder="e.g. 10"
-                    {...register('seatLimit')}
-                    error={!!errors.seatLimit}
-                    hint={errors.seatLimit?.message || 'Maximum user accounts permitted'}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="employeeCount"
-                    className="font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Total Employee Count
-                  </Label>
-                  <Input
-                    id="employeeCount"
-                    type="number"
-                    min={0}
-                    placeholder="e.g. 250"
-                    {...register('employeeCount')}
-                    error={!!errors.employeeCount}
-                    hint={errors.employeeCount?.message}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="siteCount"
-                    className="font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Site / Plant / Facility Count
-                  </Label>
-                  <Input
-                    id="siteCount"
-                    type="number"
-                    min={0}
-                    placeholder="e.g. 5"
-                    {...register('siteCount')}
-                    error={!!errors.siteCount}
-                    hint={errors.siteCount?.message}
                   />
                 </div>
               </div>

@@ -24,6 +24,7 @@ export interface SubscriptionPlan {
   pricing: PlanPricing[];
   defaultCurrency: string;
   isActive: boolean;
+  isCustomPricing?: boolean;
   order?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -51,6 +52,7 @@ export interface CreateSubscriptionPlanData {
   pricing?: PlanPricing[];
   defaultCurrency?: string;
   isActive?: boolean;
+  isCustomPricing?: boolean;
 }
 
 export interface UpdateSubscriptionPlanData {
@@ -65,6 +67,7 @@ export interface UpdateSubscriptionPlanData {
   pricing?: PlanPricing[];
   defaultCurrency?: string;
   isActive?: boolean;
+  isCustomPricing?: boolean;
 }
 
 export const SUBSCRIPTION_PLAN_TIERS = [

@@ -28,6 +28,7 @@ export interface Organization {
   usedSeats: number;
   maxSitesLimit?: number;
   storageLimitGB?: number;
+  storageUsedBytes?: number;
   maxInspectionsPerMonth?: number;
   maxImagesPerInspection?: number;
   maxVideoUploads?: number;
@@ -60,15 +61,12 @@ export interface CreateOrganizationData {
   contactPersonPhone?: string;
   address?: OrgAddress;
   gstin?: string;
-  employeeCount?: number;
-  siteCount?: number;
   logoFileId?: string;
   subscriptionPlanId?: string;
   currencyId?: string;
   currencyCode?: string;
   subscriptionStartDate?: string;
   subscriptionEndDate?: string;
-  seatLimit?: number;
   billingEmail?: string;
 }
 
@@ -80,8 +78,6 @@ export interface UpdateOrganizationData {
   contactPersonPhone?: string;
   address?: OrgAddress;
   gstin?: string;
-  employeeCount?: number;
-  siteCount?: number;
   logoFileId?: string;
   subscriptionPlanId?: string;
   currencyId?: string;

@@ -20,8 +20,8 @@ import {
   FileText,
   Factory,
   Sparkles,
-  RefreshCw,
   UserPlus,
+  HardDrive,
 } from 'lucide-react';
 import { Organization, ORGANIZATION_STATUS_LABELS } from '@/types/organization.types';
 import { getImageUrl } from '@/lib/utils';
@@ -70,6 +70,16 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
   const seatLimit = organization.seatLimit || 1;
   const usedSeats = organization.usedSeats || 0;
   const seatPercent = Math.min(100, Math.round((usedSeats / seatLimit) * 100));
+
+  // Media Storage metrics
+  const storageLimitGB = organization.storageLimitGB || 10;
+  const rawBytes = organization.storageUsedBytes || 0;
+  const storageUsedGB =
+    rawBytes > 0
+      ? Number((rawBytes / (1024 * 1024 * 1024)).toFixed(2))
+      : (organization as { storageUsedGB?: number }).storageUsedGB || 0.25;
+  const storagePercent =
+    storageLimitGB === -1 ? 0 : Math.min(100, Math.round((storageUsedGB / storageLimitGB) * 100));
 
   // Subscription dates & progress
   const startDate = organization.subscriptionStartDate
@@ -437,149 +447,122 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
 
       {/* Tab 1: Subscription & Quotas */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Progress Bars Card */}
-          <div className="lg:col-span-2 rounded-2xl border border-gray-100 dark:border-navy-700 bg-white dark:bg-navy-800 p-6 shadow-sm space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <Sparkles size={18} className="text-brand-500" />
-                Resource Quotas & System Limits
-              </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Real-time capacity usage and plan allowances for {organization.companyName}
-              </p>
+        <div className="w-full rounded-2xl border border-gray-100 dark:border-navy-700 bg-white dark:bg-navy-800 p-6 shadow-sm space-y-6">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <Sparkles size={18} className="text-brand-500" />
+              Resource Quotas & System Limits
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Real-time capacity usage and plan allowances for {organization.companyName}
+            </p>
+          </div>
+
+          <div className="space-y-5">
+            {/* Member Seats Progress */}
+            <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-navy-900/40 border border-gray-100 dark:border-navy-700/60 space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                  <Users size={14} className="text-brand-500" />
+                  Member Seats ({usedSeats} / {seatLimit})
+                </span>
+                <span className="text-brand-600 dark:text-brand-400">{seatPercent}% Capacity</span>
+              </div>
+              <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-navy-700 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    seatPercent >= 90
+                      ? 'bg-rose-500'
+                      : seatPercent >= 75
+                        ? 'bg-amber-500'
+                        : 'bg-brand-500'
+                  }`}
+                  style={{ width: `${seatPercent}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-gray-400">
+                <span>0 Seats</span>
+                <span>{seatLimit} Max Authorized Seats</span>
+              </div>
             </div>
 
-            <div className="space-y-5">
-              {/* Member Seats Progress */}
+            {/* Plant / Site Quota Progress */}
+            <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-navy-900/40 border border-gray-100 dark:border-navy-700/60 space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                  <Factory size={14} className="text-blue-500" />
+                  Registered Facilities & Sites ({organization.maxSitesLimit || 1} Max Plants)
+                </span>
+                <span className="text-blue-600 dark:text-blue-400">Active</span>
+              </div>
+              <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-navy-700 overflow-hidden">
+                <div className="h-full rounded-full bg-blue-500 w-1/2 transition-all duration-500" />
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-gray-400">
+                <span>1 Site</span>
+                <span>Unlimited Site Governance</span>
+              </div>
+            </div>
+
+            {/* Media Storage Quota Progress */}
+            <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-navy-900/40 border border-gray-100 dark:border-navy-700/60 space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                  <HardDrive size={14} className="text-emerald-500" />
+                  Media Storage Allowance ({storageUsedGB} GB /{' '}
+                  {storageLimitGB === -1 ? '∞' : `${storageLimitGB} GB`})
+                </span>
+                <span className="text-emerald-600 dark:text-emerald-400">
+                  {storagePercent}% Capacity
+                </span>
+              </div>
+              <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-navy-700 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    storagePercent >= 90
+                      ? 'bg-rose-500'
+                      : storagePercent >= 75
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
+                  }`}
+                  style={{ width: `${storagePercent}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-gray-400">
+                <span>{storageUsedGB} GB Used</span>
+                <span>
+                  {storageLimitGB === -1
+                    ? 'Unlimited GB'
+                    : `${(storageLimitGB - storageUsedGB).toFixed(1)} GB Free`}
+                </span>
+              </div>
+            </div>
+
+            {/* Subscription Timeline Progress */}
+            {startDate && endDate && (
               <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-navy-900/40 border border-gray-100 dark:border-navy-700/60 space-y-2">
                 <div className="flex items-center justify-between text-xs font-semibold">
                   <span className="text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <Users size={14} className="text-brand-500" />
-                    Member Seats ({usedSeats} / {seatLimit})
+                    <Calendar size={14} className="text-purple-500" />
+                    Subscription Period ({startDate.toLocaleDateString()} —{' '}
+                    {endDate.toLocaleDateString()})
                   </span>
-                  <span className="text-brand-600 dark:text-brand-400">
-                    {seatPercent}% Capacity
+                  <span className="text-purple-600 dark:text-purple-400">
+                    {subscriptionDaysRemaining} Days Left
                   </span>
                 </div>
                 <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-navy-700 overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      seatPercent >= 90
-                        ? 'bg-rose-500'
-                        : seatPercent >= 75
-                          ? 'bg-amber-500'
-                          : 'bg-brand-500'
-                    }`}
-                    style={{ width: `${seatPercent}%` }}
+                    className="h-full rounded-full bg-purple-500 transition-all duration-500"
+                    style={{ width: `${subscriptionPercent}%` }}
                   />
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-gray-400">
-                  <span>0 Seats</span>
-                  <span>{seatLimit} Max Authorized Seats</span>
+                  <span>Started {startDate.toLocaleDateString()}</span>
+                  <span>Expires {endDate.toLocaleDateString()}</span>
                 </div>
               </div>
-
-              {/* Plant / Site Quota Progress */}
-              <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-navy-900/40 border border-gray-100 dark:border-navy-700/60 space-y-2">
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <span className="text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <Factory size={14} className="text-blue-500" />
-                    Registered Facilities & Sites ({organization.siteCount || 0} Plants)
-                  </span>
-                  <span className="text-blue-600 dark:text-blue-400">Active</span>
-                </div>
-                <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-navy-700 overflow-hidden">
-                  <div className="h-full rounded-full bg-blue-500 w-1/2 transition-all duration-500" />
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-gray-400">
-                  <span>1 Site</span>
-                  <span>Unlimited Site Governance</span>
-                </div>
-              </div>
-
-              {/* Subscription Timeline Progress */}
-              {startDate && endDate && (
-                <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-navy-900/40 border border-gray-100 dark:border-navy-700/60 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-semibold">
-                    <span className="text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                      <Calendar size={14} className="text-purple-500" />
-                      Subscription Period ({startDate.toLocaleDateString()} —{' '}
-                      {endDate.toLocaleDateString()})
-                    </span>
-                    <span className="text-purple-600 dark:text-purple-400">
-                      {subscriptionDaysRemaining} Days Left
-                    </span>
-                  </div>
-                  <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-navy-700 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-purple-500 transition-all duration-500"
-                      style={{ width: `${subscriptionPercent}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] text-gray-400">
-                    <span>Started {startDate.toLocaleDateString()}</span>
-                    <span>Expires {endDate.toLocaleDateString()}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Plan Summary Sidebar Card */}
-          <div className="rounded-2xl border border-gray-100 dark:border-navy-700 bg-white dark:bg-navy-800 p-6 shadow-sm space-y-5">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <CreditCard size={18} className="text-purple-500" />
-              Plan & Billing Info
-            </h3>
-
-            <div className="space-y-3 divide-y divide-gray-100 dark:divide-navy-700/60 text-xs">
-              <div className="pt-2 flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Plan Name</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{planName}</span>
-              </div>
-
-              <div className="pt-3 flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Currency</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {organization.currencyCode || 'INR'}
-                </span>
-              </div>
-
-              <div className="pt-3 flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Status</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400 uppercase">
-                  {organization.status}
-                </span>
-              </div>
-
-              <div className="pt-3 flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Billing Email</span>
-                <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[160px]">
-                  {organization.billingEmail || organization.contactPersonEmail || '—'}
-                </span>
-              </div>
-
-              <div className="pt-3 flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Created On</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {organization.createdAt
-                    ? new Date(organization.createdAt).toLocaleDateString()
-                    : '—'}
-                </span>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                onClick={() => router.push(`/organizations/update/${organization.id}`)}
-                className="w-full justify-center text-xs gap-2"
-              >
-                <RefreshCw size={14} />
-                Manage Subscription & Billing
-              </Button>
-            </div>
+            )}
           </div>
         </div>
       )}

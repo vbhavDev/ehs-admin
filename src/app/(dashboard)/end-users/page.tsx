@@ -5,8 +5,6 @@ import { EndUserTable } from '@/modules/end-users/components/EndUserTable';
 import { InviteEndUserModal } from '@/modules/end-users/components/InviteEndUserModal';
 import { EndUser } from '@/types/end-user.types';
 import { useEndUsers } from '@/modules/end-users/hooks/useEndUsers';
-import Button from '@/components/ui/button/Button';
-import { Plus, MailPlus } from 'lucide-react';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { useGlobalModal } from '@/hooks/useGlobalModal';
 
@@ -15,10 +13,6 @@ export default function EndUsersPage() {
   const { deleteEndUser } = useEndUsers();
   const { confirm } = useGlobalModal();
   const [isInviteOpen, setIsInviteOpen] = useState(false);
-
-  const handleCreate = () => {
-    router.push('/end-users/create');
-  };
 
   const handleView = (user: EndUser) => {
     router.push(`/end-users/view/${user.id}`);
@@ -53,7 +47,7 @@ export default function EndUsersPage() {
             Cross-org view of all client-facing users — individuals and organization members.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        {/*        <div className="flex items-center gap-2">
           <Button
             type="button"
             variant="outline"
@@ -67,7 +61,7 @@ export default function EndUsersPage() {
             <Plus size={20} />
             Add End User
           </Button>
-        </div>
+        </div>*/}
       </div>
 
       <EndUserTable onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />

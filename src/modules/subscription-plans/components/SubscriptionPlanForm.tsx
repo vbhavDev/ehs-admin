@@ -42,14 +42,15 @@ import { useCurrencies } from '@/modules/currencies/hooks/useCurrencies';
 const planSchema = z.object({
   name: z.string().min(2, 'Plan name is required'),
   tier: z.string().min(1, 'Please pick a tier'),
-  maxInspectionsPerMonth: z.coerce.number(),
-  maxImagesPerInspection: z.coerce.number().min(0),
-  maxVideoUploads: z.coerce.number().min(0),
-  maxUsers: z.coerce.number().min(0),
-  maxPlants: z.coerce.number(),
-  maxStorageGB: z.coerce.number(),
+  maxInspectionsPerMonth: z.coerce.number().min(-1, 'Set -1 or greater'),
+  maxImagesPerInspection: z.coerce.number().min(-1, 'Set -1 or greater'),
+  maxVideoUploads: z.coerce.number().min(-1, 'Set -1 or greater'),
+  maxUsers: z.coerce.number().min(-1, 'Set -1 or greater'),
+  maxPlants: z.coerce.number().min(-1, 'Set -1 or greater'),
+  maxStorageGB: z.coerce.number().min(-1, 'Set -1 or greater'),
   defaultCurrency: z.string().min(1, 'Default currency is required'),
   isActive: z.boolean(),
+  isCustomPricing: z.boolean(),
 });
 
 type PlanFormData = z.infer<typeof planSchema>;
@@ -131,6 +132,7 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
           maxStorageGB: initialData.maxStorageGB ?? 10,
           defaultCurrency: initialData.defaultCurrency,
           isActive: initialData.isActive,
+          isCustomPricing: initialData.isCustomPricing ?? false,
         }
       : {
           name: '',
@@ -143,12 +145,19 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
           maxStorageGB: 10,
           defaultCurrency: 'INR',
           isActive: true,
+          isCustomPricing: false,
         },
   });
 
   const selectedTier = watch('tier');
   const isActive = watch('isActive');
+  const isCustomPricing = watch('isCustomPricing');
   const isFreeTier = selectedTier === 'free';
+  const hasDisabledPricing = isFreeTier || isCustomPricing;
+  const isIndividualPlan =
+    selectedTier === 'free' ||
+    selectedTier === 'individual_pro' ||
+    selectedTier === 'individual_business';
 
   /** Toggle a compliance standard in/out of the features list (stored as feature tags). */
   const toggleStandard = (standard: string) => {
@@ -230,13 +239,16 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
     try {
       const payload = {
         ...data,
+        maxUsers: isIndividualPlan ? 1 : data.maxUsers,
+        maxPlants: isIndividualPlan ? 0 : data.maxPlants,
         features,
-        // Free plans have no MRP — pricing is always empty for the free tier.
-        pricing: isFreeTier
-          ? []
-          : pricing
-              .filter((p) => p.currencyCode)
-              .map((p) => ({ ...p, currencyCode: p.currencyCode.toUpperCase() })),
+        // Free or Custom Pricing plans have no fixed MRP — pricing is empty.
+        pricing:
+          isFreeTier || data.isCustomPricing
+            ? []
+            : pricing
+                .filter((p) => p.currencyCode)
+                .map((p) => ({ ...p, currencyCode: p.currencyCode.toUpperCase() })),
       };
       if (isEdit && initialData) {
         await updatePlan({ id: initialData.id, data: payload });
@@ -270,10 +282,15 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
     {
       name: 'maxImagesPerInspection' as const,
       label: 'Images / inspection',
-      hint: '',
+      hint: 'Set -1 for unlimited',
       Icon: Images,
     },
-    { name: 'maxVideoUploads' as const, label: 'Video uploads', hint: '', Icon: Video },
+    {
+      name: 'maxVideoUploads' as const,
+      label: 'Video / inspection',
+      hint: 'Set -1 for unlimited',
+      Icon: Video,
+    },
     {
       name: 'maxPlants' as const,
       label: 'Plants / branches',
@@ -287,6 +304,13 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
       Icon: HardDrive,
     },
   ];
+
+  const activeLimitFields = limitFields.filter((field) => {
+    if (isIndividualPlan && (field.name === 'maxUsers' || field.name === 'maxPlants')) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="mx-auto max-w-4xl pb-28">
@@ -423,7 +447,7 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
           tone="bg-success-50 text-success-500 dark:bg-success-500/10"
         >
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {limitFields.map(({ name, label, hint, Icon }) => (
+            {activeLimitFields.map(({ name, label, hint, Icon }) => (
               <div key={name} className="space-y-2">
                 <Label htmlFor={name} className="flex items-center gap-2">
                   <Icon size={15} className="text-gray-400" />
@@ -491,10 +515,28 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
         {/* Pricing */}
         <Section
           icon={<CreditCard size={20} />}
-          title="Pricing"
-          description="Set prices per currency and billing cycle. Add a row per currency."
+          title="Pricing & Monetization"
+          description="Set prices per currency and billing cycle, or enable Custom Pricing to route inquiries to sales."
           tone="bg-warning-50 text-warning-500 dark:bg-warning-500/10"
         >
+          <div className="mb-6 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50/60 p-4 dark:border-navy-700 dark:bg-navy-900/40">
+            <div className="space-y-0.5">
+              <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                Enable Custom Pricing (&quot;Contact Us&quot;)
+              </span>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Check this box for enterprise or custom plans. Displays &quot;Custom Pricing&quot;
+                on pricing cards and redirects users to Contact Us.
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              id="isCustomPricing"
+              {...register('isCustomPricing')}
+              className="h-5 w-5 cursor-pointer rounded border-gray-300 accent-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800"
+            />
+          </div>
+
           {isFreeTier && (
             <div className="mb-5 flex items-start gap-3 rounded-xl border border-brand-200 bg-brand-50/60 p-4 dark:border-brand-500/30 dark:bg-brand-500/10">
               <Info size={18} className="mt-0.5 shrink-0 text-brand-500" />
@@ -509,9 +551,25 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
               </div>
             </div>
           )}
+
+          {isCustomPricing && !isFreeTier && (
+            <div className="mb-5 flex items-start gap-3 rounded-xl border border-purple-200 bg-purple-50/60 p-4 dark:border-purple-500/30 dark:bg-purple-500/10">
+              <Info size={18} className="mt-0.5 shrink-0 text-purple-500" />
+              <div>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                  Custom Pricing Enabled
+                </p>
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  Fixed cycle pricing is disabled for this plan. Customers choosing this plan will
+                  be directed to the Contact Us page for tailored enterprise quotes.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div
-            className={`space-y-5 ${isFreeTier ? 'pointer-events-none select-none opacity-50' : ''}`}
-            aria-disabled={isFreeTier}
+            className={`space-y-5 ${hasDisabledPricing ? 'pointer-events-none select-none opacity-50' : ''}`}
+            aria-disabled={hasDisabledPricing}
           >
             {pricing.length === 0 ? (
               <button

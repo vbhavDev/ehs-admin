@@ -4,6 +4,7 @@ import './globals.css';
 import 'flatpickr/dist/flatpickr.css';
 import QueryProvider from '@/providers/QueryProvider';
 import { BrandThemeProvider } from '@/providers/BrandThemeProvider';
+import { FeatureFlagsProvider } from '@/providers/FeatureFlagsProvider';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ToasterProvider } from '@/components/providers/ToasterProvider';
@@ -48,14 +49,16 @@ export default function RootLayout({
       <body className={`${openSans.className} dark:bg-gray-900`}>
         <ToasterProvider />
         <QueryProvider>
-          <BrandThemeProvider>
-            <ThemeProvider>
-              <ModalProvider>
-                <SidebarProvider>{children}</SidebarProvider>
-                <GlobalModal />
-              </ModalProvider>
-            </ThemeProvider>
-          </BrandThemeProvider>
+          <FeatureFlagsProvider>
+            <BrandThemeProvider>
+              <ThemeProvider>
+                <ModalProvider>
+                  <SidebarProvider>{children}</SidebarProvider>
+                  <GlobalModal />
+                </ModalProvider>
+              </ThemeProvider>
+            </BrandThemeProvider>
+          </FeatureFlagsProvider>
         </QueryProvider>
       </body>
     </html>
