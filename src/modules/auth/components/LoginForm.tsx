@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams } from 'next/navigation';
 import { ApiError } from '@/types/api.types';
 import { ConnectionStatus } from '@/components/common/ConnectionStatus';
+import { useFeatureFlag } from '@/modules/feature-flags/hooks/useFeatureFlags';
+import { FEATURE_FLAG_KEYS } from '@/types/feature-flag.types';
 
 interface LoginFormProps {
   onSwitchToSignup: () => void;
@@ -15,6 +17,7 @@ interface LoginFormProps {
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup, onSwitchToForgot }) => {
   const searchParams = useSearchParams();
   const { login, isLoggingIn } = useAuth();
+  const loginEnabled = useFeatureFlag(FEATURE_FLAG_KEYS.ADMIN_LOGIN);
 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState(searchParams.get('email') || '');
@@ -62,6 +65,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup, onSwitch
     e.preventDefault();
     setErrors({});
 
+    if (!loginEnabled) return;
+
     if (!validate()) return;
 
     try {
@@ -87,6 +92,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup, onSwitch
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {!loginEnabled && (
+        <div className="flex items-start gap-3 rounded-2xl border border-error-200 bg-error-50 p-4 text-sm text-error-600 dark:border-error-500/20 dark:bg-error-500/10 dark:text-error-400">
+          <ShieldAlert size={18} className="mt-0.5 shrink-0" />
+          <p>
+            Admin login is temporarily <strong>disabled</strong> by a platform administrator. Please
+            try again later.
+          </p>
+        </div>
+      )}
+
       {errors.general && (
         <div className="p-4 bg-brand-500/10 border border-brand-500/20 rounded-2xl flex items-center gap-3 text-brand-500 text-sm">
           <AlertCircle size={18} />
@@ -196,7 +211,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup, onSwitch
 
       <button
         type="submit"
-        disabled={isLoggingIn}
+        disabled={isLoggingIn || !loginEnabled}
         className="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand-500/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-lg tracking-wide"
       >
         {isLoggingIn ? (

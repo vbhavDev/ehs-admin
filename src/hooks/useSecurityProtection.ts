@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { useFeatureFlag } from '@/modules/feature-flags/hooks/useFeatureFlags';
+import { FEATURE_FLAG_KEYS } from '@/types/feature-flag.types';
 
 interface SecurityState {
   isDevToolsOpen: boolean;
@@ -11,7 +13,14 @@ interface SecurityState {
   clearBlur: () => void;
 }
 
+/**
+ * Content-protection hook. The whole layer is gated by the
+ * `admin_content_protection` kill-switch — when an admin disables it from the
+ * Feature Toggles page, none of the listeners (right-click block, blur,
+ * screenshot warning, DevTools trap) are attached.
+ */
 export function useSecurityProtection(): SecurityState {
+  const protectionEnabled = useFeatureFlag(FEATURE_FLAG_KEYS.ADMIN_CONTENT_PROTECTION);
   const pathname = usePathname();
   const [isDevToolsOpen, setIsDevToolsOpen] = useState<boolean>(false);
   const [isBlurred, setIsBlurred] = useState<boolean>(false);
@@ -78,7 +87,7 @@ export function useSecurityProtection(): SecurityState {
 
   // 2. Right-click context menu prevention (allows context menu on inputs/textareas/editors)
   useEffect(() => {
-    if (!isProtectedPage) return;
+    if (!protectionEnabled || !isProtectedPage) return;
 
     const handleContextMenu = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
@@ -105,10 +114,12 @@ export function useSecurityProtection(): SecurityState {
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu, true);
     };
-  }, [isProtectedPage]);
+  }, [isProtectedPage, protectionEnabled]);
 
   // 3. Keyboard shortcut prevention (PrintScreen, Snipping tool, Save, Print, DevTools)
   useEffect(() => {
+    if (!protectionEnabled) return;
+
     const isPrintScreenKey = (e: KeyboardEvent) => {
       const key = e.key ? e.key.toLowerCase() : '';
       const code = e.code ? e.code.toLowerCase() : '';
@@ -219,11 +230,11 @@ export function useSecurityProtection(): SecurityState {
       window.removeEventListener('keydown', handleKeyDown, true);
       window.removeEventListener('keyup', handleKeyUp, true);
     };
-  }, [triggerScreenshotWarning, clearClipboard]);
+  }, [triggerScreenshotWarning, clearClipboard, protectionEnabled]);
 
   // 4. Mouse cursor event tracking & focus detection (Active ONLY on data tables, view pages, update pages)
   useEffect(() => {
-    if (!isProtectedPage) {
+    if (!protectionEnabled || !isProtectedPage) {
       setIsBlurred(false);
       return;
     }
@@ -280,10 +291,16 @@ export function useSecurityProtection(): SecurityState {
       window.removeEventListener('focus', handleFocus, true);
       document.removeEventListener('visibilitychange', handleVisibilityChange, true);
     };
-  }, [isProtectedPage, clearClipboard]);
+  }, [isProtectedPage, clearClipboard, protectionEnabled]);
 
   // 5. DevTools detection logic
   useEffect(() => {
+    if (!protectionEnabled) {
+      // Protection off — ensure no stale detection modal lingers.
+      setIsDevToolsOpen(false);
+      return;
+    }
+
     const threshold = 160;
 
     const checkDevTools = () => {
@@ -312,11 +329,11 @@ export function useSecurityProtection(): SecurityState {
       clearInterval(intervalId);
       window.removeEventListener('resize', checkDevTools);
     };
-  }, []);
+  }, [protectionEnabled]);
 
   // 6. Continuous Debugger Trap loop when DevTools is open
   useEffect(() => {
-    if (!isDevToolsOpen) return;
+    if (!protectionEnabled || !isDevToolsOpen) return;
 
     const trapInterval = setInterval(() => {
       try {
@@ -330,7 +347,7 @@ export function useSecurityProtection(): SecurityState {
     return () => {
       clearInterval(trapInterval);
     };
-  }, [isDevToolsOpen]);
+  }, [isDevToolsOpen, protectionEnabled]);
 
   return {
     isDevToolsOpen,
