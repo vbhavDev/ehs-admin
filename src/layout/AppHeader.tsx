@@ -1,10 +1,10 @@
 'use client';
 import { ThemeToggleButton } from '@/components/common/ThemeToggleButton';
 import UserDropdown from '@/components/header/UserDropdown';
-import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect, useRef } from 'react';
 import { useSidebar } from '@/context/SidebarContext';
+import BrandLogo from '@/components/common/BrandLogo';
 
 const AppHeader: React.FC = () => {
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -82,23 +82,13 @@ const AppHeader: React.FC = () => {
           </button>
 
           <Link href="/" className="lg:hidden flex items-center">
-            <Image
+            <BrandLogo
+              variant="full"
+              fallbackLight="/images/logo/logo.webp"
+              fallbackDark="/images/logo/logo-dark.webp"
               width={200}
               height={200}
-              className="dark:hidden object-contain object-left"
-              src="/images/logo/logo.webp"
-              alt="Logo"
               style={{ width: 'auto', height: '40px' }}
-              priority
-            />
-            <Image
-              width={200}
-              height={200}
-              className="hidden dark:block object-contain object-left"
-              src="/images/logo/logo-dark.webp"
-              alt="Logo"
-              style={{ width: 'auto', height: '40px' }}
-              priority
             />
           </Link>
 
