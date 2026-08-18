@@ -567,3 +567,5 @@ export const TemplatePreviewView: React.FC<TemplatePreviewViewProps> = ({ templa
     </div>
   );
 };
+
+export default TemplatePreviewView;
