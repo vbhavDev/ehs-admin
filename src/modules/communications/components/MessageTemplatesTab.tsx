@@ -18,6 +18,7 @@ import {
   Send,
   CloudDownload,
   FileCode,
+  Eye,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -61,6 +62,10 @@ export const MessageTemplatesTab: React.FC<MessageTemplatesTabProps> = ({ channe
   // Pull sync state
   const [externalIdInput, setExternalIdInput] = useState('');
   const [isPulling, setIsPulling] = useState(false);
+
+  const handleView = (template: MessageTemplate) => {
+    router.push(`/communications/templates/${template.id}/view`);
+  };
 
   const handleEdit = (template: MessageTemplate) => {
     router.push(`/communications/templates/${template.id}/edit`);
@@ -257,6 +262,15 @@ export const MessageTemplatesTab: React.FC<MessageTemplatesTabProps> = ({ channe
       header: 'Actions',
       accessor: (tpl) => (
         <div className="flex items-center gap-1.5">
+          {/* View Template Preview & Test Variables */}
+          <button
+            onClick={() => handleView(tpl)}
+            className="p-1.5 text-gray-400 hover:text-brand-500 dark:hover:text-brand-400 bg-gray-50 dark:bg-navy-950 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg transition-all"
+            title="View Preview & Test Variables"
+          >
+            <Eye size={13} />
+          </button>
+
           {/* Edit Template */}
           <button
             onClick={() => handleEdit(tpl)}
