@@ -6,6 +6,7 @@ interface ChartCardProps {
   action?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  isLoading?: boolean;
 }
 
 /**
@@ -19,6 +20,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
   action,
   children,
   className = '',
+  isLoading = false,
 }) => {
   return (
     <div
@@ -31,7 +33,17 @@ export const ChartCard: React.FC<ChartCardProps> = ({
         </div>
         {action}
       </div>
-      {children}
+      {isLoading ? (
+        <div className="h-64 w-full bg-gray-100 dark:bg-navy-750/50 rounded-xl animate-pulse flex items-end p-4 gap-3">
+          <div className="h-1/3 flex-1 bg-gray-200 dark:bg-navy-700 rounded-md" />
+          <div className="h-2/3 flex-1 bg-gray-200 dark:bg-navy-700 rounded-md" />
+          <div className="h-1/2 flex-1 bg-gray-200 dark:bg-navy-700 rounded-md" />
+          <div className="h-4/5 flex-1 bg-gray-200 dark:bg-navy-700 rounded-md" />
+          <div className="h-3/5 flex-1 bg-gray-200 dark:bg-navy-700 rounded-md" />
+        </div>
+      ) : (
+        children
+      )}
     </div>
   );
 };

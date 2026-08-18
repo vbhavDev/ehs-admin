@@ -12,6 +12,7 @@ export interface KpiCardProps {
   iconTextColor: string;
   /** Optional destination — renders the whole card as a link. */
   href?: string;
+  isLoading?: boolean;
 }
 
 /**
@@ -28,7 +29,20 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   iconBgColor,
   iconTextColor,
   href,
+  isLoading = false,
 }) => {
+  if (isLoading) {
+    return (
+      <div className="relative overflow-hidden flex items-center p-5 bg-white border border-gray-100 rounded-xl shadow-theme-xs dark:bg-navy-800 dark:border-navy-700 animate-pulse">
+        <div className="relative z-10 flex shrink-0 items-center justify-center w-14 h-14 rounded-2xl mr-4 bg-gray-200 dark:bg-navy-700" />
+        <div className="relative z-10 min-w-0 flex-1 space-y-2">
+          <div className="h-3 w-20 bg-gray-200 dark:bg-navy-700 rounded-md" />
+          <div className="h-7 w-16 bg-gray-200 dark:bg-navy-700 rounded-md" />
+          <div className="h-3 w-28 bg-gray-100 dark:bg-navy-750 rounded-md" />
+        </div>
+      </div>
+    );
+  }
   const body = (
     <>
       {bgIllustration && (
