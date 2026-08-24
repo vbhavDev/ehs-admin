@@ -319,8 +319,7 @@ export const PlantFormModal: React.FC<PlantFormModalProps> = ({
             Cancel
           </Button>
           <Button
-            type="submit"
-            form="plant-form"
+            onClick={handleSubmit}
             disabled={loading}
             className="min-w-[140px] flex items-center justify-center gap-2"
           >

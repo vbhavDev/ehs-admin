@@ -169,7 +169,7 @@ export const OrganizationPlantsSection: React.FC<OrganizationPlantsSectionProps>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredPlants.map((plant) => {
-            const typeInfo = TYPE_CONFIG[plant.type] || TYPE_CONFIG.OTHER;
+            const typeInfo = (TYPE_CONFIG[plant.type] || TYPE_CONFIG.OTHER)!;
             const TypeIcon = typeInfo.icon;
 
             return (
