@@ -29,6 +29,7 @@ import Button from '@/components/ui/button/Button';
 import toast from 'react-hot-toast';
 import { InviteUserModal } from './InviteUserModal';
 import { OrganizationSubscriptionSection } from './OrganizationSubscriptionSection';
+import { OrganizationPlantsSection } from './OrganizationPlantsSection';
 
 interface OrganizationDashboardViewProps {
   organization: Organization;
@@ -47,9 +48,9 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
 }) => {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'subscription' | 'metrics' | 'contact'>(
-    'overview',
-  );
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'subscription' | 'plants' | 'metrics' | 'contact'
+  >('overview');
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const logoObj =
@@ -419,6 +420,19 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
 
           <button
             type="button"
+            onClick={() => setActiveTab('plants')}
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
+              activeTab === 'plants'
+                ? 'border-brand-500 text-brand-600 dark:text-brand-400'
+                : 'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
+            }`}
+          >
+            <Factory size={18} />
+            Plant Facilities
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('contact')}
             className={`pb-3 border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'contact'
@@ -694,6 +708,9 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
           onRefresh={() => router.refresh()}
         />
       )}
+
+      {/* Tab: Plant Facilities */}
+      {activeTab === 'plants' && <OrganizationPlantsSection organization={organization} />}
 
       {/* Invite User Modal */}
       <InviteUserModal

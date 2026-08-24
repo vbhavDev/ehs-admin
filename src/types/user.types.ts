@@ -6,6 +6,7 @@ export interface Role {
   roleKey: string;
   isActive: boolean;
   isShow: boolean;
+  scope?: 'SYSTEM' | 'CLIENT';
   permissions: string[];
 }
 

@@ -3,8 +3,11 @@ import { API_ENDPOINTS } from '@/constants/api';
 import { Role } from '@/types/user.types';
 
 export const rolesService = {
-  getRoles: async (): Promise<Role[]> => {
-    return apiFetch<Role[]>(API_ENDPOINTS.ADMIN.ROLES.BASE);
+  getRoles: async (scope?: 'SYSTEM' | 'CLIENT'): Promise<Role[]> => {
+    const url = scope
+      ? `${API_ENDPOINTS.ADMIN.ROLES.BASE}?scope=${scope}`
+      : API_ENDPOINTS.ADMIN.ROLES.BASE;
+    return apiFetch<Role[]>(url);
   },
 
   getRoleById: async (id: string): Promise<Role> => {
