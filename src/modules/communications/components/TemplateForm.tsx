@@ -15,7 +15,17 @@ import { useSystemEvents } from '../hooks/useSystemEvents';
 import { useFetchVariables } from '../hooks/useVariables';
 import { VariableTokenSidebar } from './VariableTokenSidebar';
 import { communicationService } from '@/services/communication.service';
-import { ShieldQuestion, Copy, Zap, ArrowLeft, Info, Eye, X, ChevronDown } from 'lucide-react';
+import {
+  ShieldQuestion,
+  Copy,
+  Zap,
+  ArrowLeft,
+  Info,
+  Eye,
+  X,
+  ChevronDown,
+  AlertCircle,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface SchemaComboboxProps {
@@ -159,7 +169,11 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ templateId, defaultC
   const isEdit = !!templateId;
 
   // Fetch data if editing
-  const { data: editData, isLoading: isLoadingTemplate } = useMessageTemplate(templateId || '');
+  const {
+    data: editData,
+    isLoading: isLoadingTemplate,
+    error: fetchError,
+  } = useMessageTemplate(templateId || '');
 
   const [schemaDiscovery, setSchemaDiscovery] = useState<SchemaDiscoveryResult[]>([]);
   const [baseSchema, setBaseSchema] = useState('');
@@ -581,6 +595,23 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ templateId, defaultC
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
+      </div>
+    );
+  }
+
+  if (isEdit && fetchError) {
+    return (
+      <div className="p-8 text-center space-y-4 bg-white dark:bg-navy-900 rounded-3xl border border-gray-100 dark:border-navy-800 shadow-sm max-w-lg mx-auto my-12">
+        <div className="w-12 h-12 rounded-full bg-error-50 dark:bg-error-500/10 text-error-500 flex items-center justify-center mx-auto">
+          <AlertCircle size={24} />
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Template Not Found</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          The requested template could not be loaded or may have been deleted.
+        </p>
+        <Button variant="outline" onClick={() => router.push('/communications/templates')}>
+          Back to Templates
+        </Button>
       </div>
     );
   }

@@ -64,11 +64,13 @@ export const MessageTemplatesTab: React.FC<MessageTemplatesTabProps> = ({ channe
   const [isPulling, setIsPulling] = useState(false);
 
   const handleView = (template: MessageTemplate) => {
-    router.push(`/communications/templates/${template.id}/view`);
+    const targetId = template.id || template._id || template.slug;
+    router.push(`/communications/templates/${targetId}/view`);
   };
 
   const handleEdit = (template: MessageTemplate) => {
-    router.push(`/communications/templates/${template.id}/edit`);
+    const targetId = template.id || template._id || template.slug;
+    router.push(`/communications/templates/${targetId}/edit`);
   };
 
   const handleCreate = () => {
@@ -81,9 +83,10 @@ export const MessageTemplatesTab: React.FC<MessageTemplatesTabProps> = ({ channe
   };
 
   const handleSyncToProvider = async (template: MessageTemplate) => {
+    const targetId = template.id || template._id || template.slug;
     const loader = toast.loading(`Pushing template "${template.name}" to Brevo...`);
     try {
-      await syncToProvider(template.id);
+      await syncToProvider(targetId);
     } catch {
       // Toast handles error message
     } finally {
