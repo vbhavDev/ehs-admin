@@ -470,8 +470,33 @@ export const EventMappingForm: React.FC<EventMappingFormProps> = ({ mappingId })
 
   if (isEdit && isLoadingMapping) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
+      <div className="space-y-6 animate-pulse">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-7 w-48 bg-gray-200 dark:bg-navy-700 rounded-md" />
+            <div className="h-3 w-72 bg-gray-200 dark:bg-navy-700 rounded-md" />
+          </div>
+          <div className="flex gap-3">
+            <div className="h-9 w-24 bg-gray-200 dark:bg-navy-700 rounded-xl" />
+            <div className="h-9 w-32 bg-gray-200 dark:bg-navy-700 rounded-xl" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white dark:bg-navy-900 rounded-3xl p-6 border border-gray-100 dark:border-navy-800 space-y-4">
+              <div className="h-4 w-32 bg-gray-200 dark:bg-navy-700 rounded-md" />
+              <div className="h-10 w-full bg-gray-100 dark:bg-navy-800 rounded-2xl" />
+            </div>
+            <div className="bg-white dark:bg-navy-900 rounded-3xl p-6 border border-gray-100 dark:border-navy-800 space-y-4">
+              <div className="h-4 w-40 bg-gray-200 dark:bg-navy-700 rounded-md" />
+              <div className="h-20 w-full bg-gray-100 dark:bg-navy-800 rounded-2xl" />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-navy-900 rounded-3xl p-6 border border-gray-100 dark:border-navy-800 space-y-4 h-fit">
+            <div className="h-4 w-28 bg-gray-200 dark:bg-navy-700 rounded-md" />
+            <div className="h-10 w-full bg-gray-100 dark:bg-navy-800 rounded-2xl" />
+          </div>
+        </div>
       </div>
     );
   }

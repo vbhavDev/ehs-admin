@@ -12,8 +12,31 @@ export default function ViewEndUserPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <div className="h-9 w-9 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-pulse">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-gray-200 dark:bg-navy-700 rounded-xl" />
+            <div className="space-y-2">
+              <div className="h-6 w-48 bg-gray-200 dark:bg-navy-700 rounded-md" />
+              <div className="h-3 w-32 bg-gray-200 dark:bg-navy-700 rounded-md" />
+            </div>
+          </div>
+          <div className="h-9 w-24 bg-gray-200 dark:bg-navy-700 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-6 space-y-4">
+            <div className="w-20 h-20 rounded-2xl bg-gray-200 dark:bg-navy-700 mx-auto" />
+            <div className="h-5 w-36 bg-gray-200 dark:bg-navy-700 rounded-md mx-auto" />
+            <div className="h-3 w-48 bg-gray-200 dark:bg-navy-700 rounded-md mx-auto" />
+          </div>
+          <div className="lg:col-span-2 bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-6 space-y-4">
+            <div className="h-5 w-32 bg-gray-200 dark:bg-navy-700 rounded-md" />
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <div className="h-10 bg-gray-100 dark:bg-navy-800 rounded-xl" />
+              <div className="h-10 bg-gray-100 dark:bg-navy-800 rounded-xl" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

@@ -39,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${roboto.variable} ${openSans.variable}`}>
+    <html lang="en" className={`${roboto.variable} ${openSans.variable}`} suppressHydrationWarning>
       <head>
         {/* Pre-paint brand restore — applies the cached colors from the
             previous session (works on the logged-out login page too), so

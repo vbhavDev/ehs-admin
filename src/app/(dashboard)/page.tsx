@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Building2, Users, UserCog, CreditCard, Globe, Coins, Loader2 } from 'lucide-react';
+import { Building2, Users, UserCog, CreditCard, Globe, Coins } from 'lucide-react';
 import { useDashboardStats } from '@/modules/dashboard/hooks/useDashboardStats';
 import { DashboardHeader } from '@/modules/dashboard/components/DashboardHeader';
 import { KpiCard, KpiCardProps } from '@/modules/dashboard/components/KpiCard';
@@ -163,9 +163,56 @@ export default function DashboardPage() {
 
   if (!mounted || isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 className="w-10 h-10 text-brand-500 animate-spin" />
-        <p className="text-sm font-medium text-gray-500 animate-pulse">Loading dashboard data...</p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between animate-pulse">
+          <div className="space-y-2">
+            <div className="h-7 w-48 bg-gray-200 dark:bg-navy-700 rounded-lg" />
+            <div className="h-4 w-64 bg-gray-100 dark:bg-navy-750 rounded-lg" />
+          </div>
+          <div className="h-8 w-28 bg-gray-200 dark:bg-navy-700 rounded-full" />
+        </div>
+
+        {/* KPI Skeleton Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <KpiCard
+              key={i}
+              title=""
+              value=""
+              icon={null}
+              iconBgColor=""
+              iconTextColor=""
+              isLoading={true}
+            />
+          ))}
+        </div>
+
+        {/* Main Charts Skeleton */}
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 xl:col-span-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-theme-xs dark:border-navy-700 dark:bg-navy-800 animate-pulse">
+            <div className="h-5 w-40 bg-gray-200 dark:bg-navy-700 rounded-md mb-2" />
+            <div className="h-4 w-60 bg-gray-100 dark:bg-navy-750 rounded-md mb-6" />
+            <div className="h-64 bg-gray-100 dark:bg-navy-750/50 rounded-xl" />
+          </div>
+          <div className="col-span-12 xl:col-span-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-theme-xs dark:border-navy-700 dark:bg-navy-800 animate-pulse">
+            <div className="h-5 w-36 bg-gray-200 dark:bg-navy-700 rounded-md mb-2" />
+            <div className="h-4 w-48 bg-gray-100 dark:bg-navy-750 rounded-md mb-6" />
+            <div className="h-64 bg-gray-100 dark:bg-navy-750/50 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Sub-Charts / Activity Skeleton */}
+        <div className="grid grid-cols-12 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="col-span-12 md:col-span-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-theme-xs dark:border-navy-700 dark:bg-navy-800 animate-pulse space-y-4"
+            >
+              <div className="h-5 w-32 bg-gray-200 dark:bg-navy-700 rounded-md" />
+              <div className="h-48 bg-gray-100 dark:bg-navy-750/50 rounded-xl" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

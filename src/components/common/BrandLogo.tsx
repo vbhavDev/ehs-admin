@@ -38,8 +38,25 @@ export function BrandLogo({
   width = 250,
   height = 100,
 }: BrandLogoProps) {
-  const { branding } = usePlatformBranding();
+  const { branding, isLoading } = usePlatformBranding();
   const hasDynamic = Boolean(branding?.logo || branding?.logoDark);
+
+  if (isLoading) {
+    if (variant === 'icon') {
+      return (
+        <div
+          className={`animate-pulse bg-gray-200 dark:bg-navy-800 rounded-lg shrink-0 ${imgClassName}`}
+          style={{ width: width || 40, height: height || 40, ...style }}
+        />
+      );
+    }
+    return (
+      <div
+        className={`animate-pulse bg-gray-200 dark:bg-navy-800 rounded-lg ${imgClassName}`}
+        style={{ width: width || 160, height: height || 40, maxWidth: '100%', ...style }}
+      />
+    );
+  }
 
   if (variant === 'icon') {
     const src = branding?.logo || branding?.logoDark || fallbackIcon;

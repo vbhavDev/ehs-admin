@@ -52,6 +52,7 @@ export interface ProviderSyncInfo {
 
 export interface MessageTemplate {
   id: string;
+  _id?: string;
   name: string;
   slug: string;
   channel: CommunicationChannel;

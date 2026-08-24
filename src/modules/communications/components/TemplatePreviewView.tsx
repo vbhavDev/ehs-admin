@@ -180,11 +180,55 @@ export const TemplatePreviewView: React.FC<TemplatePreviewViewProps> = ({ templa
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[450px] space-y-3">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-500"></div>
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-          Loading template details and variables...
-        </p>
+      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-navy-800">
+          <div className="space-y-2">
+            <div className="h-4 w-32 bg-gray-200 dark:bg-navy-800 rounded-md" />
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-64 bg-gray-200 dark:bg-navy-800 rounded-lg" />
+              <div className="h-6 w-20 bg-gray-200 dark:bg-navy-800 rounded-full" />
+            </div>
+            <div className="h-4 w-48 bg-gray-200 dark:bg-navy-800 rounded-md" />
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-9 w-24 bg-gray-200 dark:bg-navy-800 rounded-lg" />
+            <div className="h-9 w-28 bg-gray-200 dark:bg-navy-800 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Content Skeleton Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column Skeleton */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="p-6 bg-white dark:bg-navy-900 rounded-2xl border border-gray-100 dark:border-navy-800 space-y-4">
+              <div className="h-6 w-40 bg-gray-200 dark:bg-navy-800 rounded-md" />
+              <div className="space-y-3">
+                <div className="h-4 w-24 bg-gray-200 dark:bg-navy-800 rounded-md" />
+                <div className="h-10 w-full bg-gray-200 dark:bg-navy-800 rounded-lg" />
+              </div>
+              <div className="space-y-3">
+                <div className="h-4 w-24 bg-gray-200 dark:bg-navy-800 rounded-md" />
+                <div className="h-10 w-full bg-gray-200 dark:bg-navy-800 rounded-lg" />
+              </div>
+              <div className="space-y-3">
+                <div className="h-4 w-32 bg-gray-200 dark:bg-navy-800 rounded-md" />
+                <div className="h-10 w-full bg-gray-200 dark:bg-navy-800 rounded-lg" />
+              </div>
+              <div className="h-11 w-full bg-gray-200 dark:bg-navy-800 rounded-xl mt-4" />
+            </div>
+          </div>
+
+          {/* Right Column Skeleton (Preview) */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="h-10 w-48 bg-gray-200 dark:bg-navy-800 rounded-lg" />
+            <div className="h-[480px] w-full bg-white dark:bg-navy-900 rounded-2xl border border-gray-100 dark:border-navy-800 p-6 space-y-4">
+              <div className="h-6 w-3/4 bg-gray-200 dark:bg-navy-800 rounded-md" />
+              <div className="h-4 w-1/2 bg-gray-200 dark:bg-navy-800 rounded-md" />
+              <div className="h-64 w-full bg-gray-100 dark:bg-navy-950 rounded-xl" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -523,3 +567,5 @@ export const TemplatePreviewView: React.FC<TemplatePreviewViewProps> = ({ templa
     </div>
   );
 };
+
+export default TemplatePreviewView;
