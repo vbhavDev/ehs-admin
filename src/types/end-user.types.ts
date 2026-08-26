@@ -24,6 +24,7 @@ export interface OrgMembership {
   joinedAt?: string;
   /** Org display name surfaced by the backend transform when populated (findOne). */
   orgName?: string;
+  plantIds?: { id?: string; _id?: string; name?: string; code?: string }[];
 }
 
 export interface EndUser {

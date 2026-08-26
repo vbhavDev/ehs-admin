@@ -18,7 +18,12 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    domains: ['r2.vbhav.cloud'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'r2.vbhav.cloud',
+      },
+    ],
   },
 };
 
