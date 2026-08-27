@@ -45,6 +45,7 @@ export const API_ENDPOINTS = {
     },
     PLATFORM_SETTINGS: {
       BASE: '/admin/platform-settings',
+      TRUNCATE_CLIENT_DATA: '/admin/platform-settings/truncate-client-data',
     },
     PLUGINS: {
       BASE: '/admin/plugins',

@@ -44,7 +44,8 @@ type PlatformFormData = z.infer<typeof platformSchema>;
 
 /** Platform group — identity, localization, and operational switches. */
 export function PlatformTab() {
-  const { settings, updateSettings, isUpdating } = usePlatformSettings();
+  const { settings, updateSettings, isUpdating, truncateClientData, isTruncating } =
+    usePlatformSettings();
 
   const {
     register,
@@ -197,6 +198,39 @@ export function PlatformTab() {
         >
           Save platform settings
         </Button>
+      </div>
+
+      <div className="mt-8 rounded-xl border border-error-500/20 bg-error-50/50 p-5 dark:bg-error-500/10">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h4 className="text-sm font-semibold text-error-600 dark:text-error-400">
+              Danger Zone: Truncate Client Data
+            </h4>
+            <p className="mt-1 max-w-xl text-xs text-error-600/80 dark:text-error-400/80">
+              This action will irreversibly delete all client-facing data including organizations,
+              end users, invitations, subscriptions, plants, hazards, and logs. It will NOT affect
+              system users, settings, or plugins.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="error"
+            size="sm"
+            isLoading={isTruncating}
+            startIcon={<AlertTriangle size={16} />}
+            onClick={() => {
+              if (
+                window.confirm(
+                  '⚠️ WARNING: You are about to DELETE all client data. This action CANNOT be undone. Are you absolutely sure you want to proceed?',
+                )
+              ) {
+                truncateClientData();
+              }
+            }}
+          >
+            Clear Client Data
+          </Button>
+        </div>
       </div>
     </form>
   );

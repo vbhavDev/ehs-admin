@@ -32,4 +32,13 @@ export const platformSettingsService = {
       body: JSON.stringify(data),
     });
   },
+
+  async truncateClientData(): Promise<{ success: boolean; deletedCount: number }> {
+    return apiFetch<{ success: boolean; deletedCount: number }>(
+      API_ENDPOINTS.ADMIN.PLATFORM_SETTINGS.TRUNCATE_CLIENT_DATA,
+      {
+        method: 'PATCH',
+      },
+    );
+  },
 };

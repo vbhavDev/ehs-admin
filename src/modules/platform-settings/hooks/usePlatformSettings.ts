@@ -30,11 +30,23 @@ export function usePlatformSettings() {
     },
   });
 
+  const truncateMutation = useMutation({
+    mutationFn: () => platformSettingsService.truncateClientData(),
+    onSuccess: (res) => {
+      toast.success(`Successfully truncated ${res.deletedCount} documents!`);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to truncate client data');
+    },
+  });
+
   return {
     settings: settingsQuery.data,
     isLoading: settingsQuery.isLoading,
     isError: settingsQuery.isError,
     updateSettings: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
+    truncateClientData: truncateMutation.mutateAsync,
+    isTruncating: truncateMutation.isPending,
   };
 }
