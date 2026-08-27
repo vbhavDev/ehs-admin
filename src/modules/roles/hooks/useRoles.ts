@@ -3,12 +3,12 @@ import { rolesService } from '@/services/roles.service';
 import { Role } from '@/types/user.types';
 import toast from 'react-hot-toast';
 
-export const useRoles = () => {
+export const useRoles = (scope?: 'SYSTEM' | 'CLIENT') => {
   const queryClient = useQueryClient();
 
   const rolesQuery = useQuery({
-    queryKey: ['roles'],
-    queryFn: rolesService.getRoles,
+    queryKey: ['roles', scope],
+    queryFn: () => rolesService.getRoles(scope),
   });
 
   const createRoleMutation = useMutation({

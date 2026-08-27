@@ -176,3 +176,20 @@ export const PERMISSION_GROUPS = {
     PERMISSIONS.SUPPORT_TICKET_UPDATE,
   ],
 };
+
+export const CLIENT_PERMISSIONS = {
+  // Inspections
+  INSPECTIONS_VIEW: 'client.inspections.view',
+  INSPECTIONS_MANAGE: 'client.inspections.manage',
+
+  // Plants / Facilities
+  PLANTS_VIEW: 'client.plants.view',
+  PLANTS_MANAGE: 'client.plants.manage',
+} as const;
+
+export type ClientPermission = (typeof CLIENT_PERMISSIONS)[keyof typeof CLIENT_PERMISSIONS];
+
+export const CLIENT_PERMISSION_GROUPS = {
+  Inspections: [CLIENT_PERMISSIONS.INSPECTIONS_VIEW, CLIENT_PERMISSIONS.INSPECTIONS_MANAGE],
+  'Plants & Facilities': [CLIENT_PERMISSIONS.PLANTS_VIEW, CLIENT_PERMISSIONS.PLANTS_MANAGE],
+};

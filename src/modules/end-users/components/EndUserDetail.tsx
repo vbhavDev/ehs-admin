@@ -263,12 +263,29 @@ export const EndUserDetail: React.FC<EndUserDetailProps> = ({ user, onEdit, onBa
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                      {m.orgName || `Org …${m.orgId.slice(-6)}`}
+                      {m.orgName || `Org …${String(m.orgId).slice(-6)}`}
                     </p>
                     <p className="text-xs text-gray-400">
                       {END_USER_ROLE_LABELS[m.role] || m.role}
                       {m.joinedAt ? ` · Joined ${formatDate(m.joinedAt)}` : ''}
                     </p>
+                    {Array.isArray(m.plantIds) && m.plantIds.length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {m.plantIds.map(
+                          (
+                            plant: { id?: string; _id?: string; name?: string; code?: string },
+                            idx: number,
+                          ) => (
+                            <span
+                              key={plant.id || plant._id || idx}
+                              className="inline-flex items-center gap-1 rounded bg-brand-50 px-1.5 py-0.5 text-[10px] font-medium text-brand-600 dark:bg-brand-500/10 dark:text-brand-400"
+                            >
+                              {plant.name || plant.code || 'Unknown Plant'}
+                            </span>
+                          ),
+                        )}
+                      </div>
+                    )}
                   </div>
                   <span
                     className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${

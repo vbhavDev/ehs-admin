@@ -29,6 +29,7 @@ import Button from '@/components/ui/button/Button';
 import toast from 'react-hot-toast';
 import { InviteUserModal } from './InviteUserModal';
 import { OrganizationSubscriptionSection } from './OrganizationSubscriptionSection';
+import { OrganizationPlantsSection } from './OrganizationPlantsSection';
 
 interface OrganizationDashboardViewProps {
   organization: Organization;
@@ -47,10 +48,33 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
 }) => {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'subscription' | 'metrics' | 'contact'>(
-    'overview',
-  );
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'subscription' | 'plants' | 'metrics' | 'contact'
+  >('overview');
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
+  const [liveMetrics, setLiveMetrics] = React.useState<
+    import('@/services/hazards.service').HazardMetrics | null
+  >(null);
+  const [totalPlants, setTotalPlants] = React.useState<number>(organization.siteCount || 0);
+
+  React.useEffect(() => {
+    import('@/services/hazards.service')
+      .then(({ hazardsService }) => hazardsService.getMetrics(organization.id))
+      .then((res) => setLiveMetrics(res))
+      .catch(() => {});
+
+    import('@/services/plants.service')
+      .then(({ adminPlantsService }) =>
+        adminPlantsService.getPlants({ orgId: organization.id, limit: 1 }),
+      )
+      .then((res) => {
+        if (res.meta && typeof res.meta.total === 'number') {
+          setTotalPlants(res.meta.total);
+        }
+      })
+      .catch(() => {});
+  }, [organization.id]);
 
   const logoObj =
     typeof organization.logoFileId === 'object' && organization.logoFileId !== null
@@ -120,12 +144,22 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Mock report metrics for visual presentation
+  const totalAuditsLive = liveMetrics
+    ? Object.values(liveMetrics.statusStats || {}).reduce(
+        (acc: number, val: number | unknown) => acc + (Number(val) || 0),
+        0,
+      )
+    : 0;
+
+  // Real report metrics for visual presentation
   const metrics = {
-    totalAudits: 142,
-    openIncidents: 3,
-    resolvedIncidents: 97,
-    complianceScore: 98.4,
+    totalAudits: totalAuditsLive,
+    openIncidents: liveMetrics?.statusStats?.OPEN || 0,
+    resolvedIncidents: liveMetrics?.statusStats?.RESOLVED || 0,
+    complianceScore:
+      totalAuditsLive > 0
+        ? Math.round(((liveMetrics?.statusStats?.RESOLVED || 0) / totalAuditsLive) * 100)
+        : 100,
   };
 
   return (
@@ -338,8 +372,7 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
               <span className="text-2xl font-extrabold text-gray-900 dark:text-white">
-                {organization.siteCount || 0}{' '}
-                <span className="text-sm font-normal text-gray-400">Plants</span>
+                {totalPlants} <span className="text-sm font-normal text-gray-400">Plants</span>
               </span>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
                 {organization.employeeCount || 0} Staff
@@ -419,6 +452,19 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
 
           <button
             type="button"
+            onClick={() => setActiveTab('plants')}
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
+              activeTab === 'plants'
+                ? 'border-brand-500 text-brand-600 dark:text-brand-400'
+                : 'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
+            }`}
+          >
+            <Factory size={18} />
+            Plant Facilities
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('contact')}
             className={`pb-3 border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'contact'
@@ -491,15 +537,25 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
               <div className="flex items-center justify-between text-xs font-semibold">
                 <span className="text-gray-700 dark:text-gray-200 flex items-center gap-2">
                   <Factory size={14} className="text-blue-500" />
-                  Registered Facilities & Sites ({organization.maxSitesLimit || 1} Max Plants)
+                  Registered Facilities & Sites ({organization.maxSitesLimit || 'Unlimited'} Max
+                  Plants)
                 </span>
                 <span className="text-blue-600 dark:text-blue-400">Active</span>
               </div>
               <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-navy-700 overflow-hidden">
-                <div className="h-full rounded-full bg-blue-500 w-1/2 transition-all duration-500" />
+                <div
+                  className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                  style={{
+                    width: organization.maxSitesLimit
+                      ? `${Math.min(100, (totalPlants / organization.maxSitesLimit) * 100)}%`
+                      : '100%',
+                  }}
+                />
               </div>
               <div className="flex items-center justify-between text-[11px] text-gray-400">
-                <span>1 Site</span>
+                <span>
+                  {totalPlants} {totalPlants === 1 ? 'Site' : 'Sites'}
+                </span>
                 <span>Unlimited Site Governance</span>
               </div>
             </div>
@@ -694,6 +750,9 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
           onRefresh={() => router.refresh()}
         />
       )}
+
+      {/* Tab: Plant Facilities */}
+      {activeTab === 'plants' && <OrganizationPlantsSection organization={organization} />}
 
       {/* Invite User Modal */}
       <InviteUserModal
