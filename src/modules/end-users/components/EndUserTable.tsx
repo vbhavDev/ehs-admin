@@ -343,14 +343,22 @@ export const EndUserTable: React.FC<EndUserTableProps> = ({ onView, onEdit, onDe
                           <span className="text-xs text-gray-400">—</span>
                         ) : (
                           <div className="flex flex-wrap gap-1">
-                            {activeRoles.slice(0, 2).map((m) => (
-                              <span
-                                key={m.orgId}
-                                className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-navy-700 dark:text-gray-300"
-                              >
-                                {END_USER_ROLE_LABELS[m.role] || m.role}
-                              </span>
-                            ))}
+                            {activeRoles.slice(0, 2).map((m, idx) => {
+                              const roleKey =
+                                typeof m.role === 'object' && m.role !== null
+                                  ? (((m.role as Record<string, unknown>).roleKey ||
+                                      (m.role as Record<string, unknown>)._id ||
+                                      m.role) as string)
+                                  : (m.role as string);
+                              return (
+                                <span
+                                  key={idx}
+                                  className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-navy-700 dark:text-gray-300"
+                                >
+                                  {END_USER_ROLE_LABELS[roleKey] || roleKey}
+                                </span>
+                              );
+                            })}
                             {activeRoles.length > 2 && (
                               <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-navy-700 dark:text-gray-400">
                                 +{activeRoles.length - 2}

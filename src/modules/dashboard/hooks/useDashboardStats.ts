@@ -175,8 +175,14 @@ export const useDashboardStats = () => {
     const counts = new Map<string, number>();
     endUsers.forEach((user) => {
       const activeMembership = user.orgMemberships?.find((m) => m.status === 'active');
-      const role = activeMembership?.role || (user.isIndividualSubscriber ? 'individual' : null);
-      if (!role) {
+      let role = activeMembership?.role as string | undefined;
+      if (typeof activeMembership?.role === 'object' && activeMembership.role !== null) {
+        const roleObj = activeMembership.role as { roleKey?: string; _id?: string };
+        role = roleObj.roleKey || roleObj._id || String(roleObj);
+      }
+      role = role || (user.isIndividualSubscriber ? 'individual' : undefined);
+
+      if (!role || typeof role !== 'string') {
         counts.set('unassigned', (counts.get('unassigned') || 0) + 1);
         return;
       }

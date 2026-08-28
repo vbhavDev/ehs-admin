@@ -18,13 +18,13 @@ export interface PopulatedSubscription {
 }
 
 export interface OrgMembership {
-  orgId: string;
-  role: string;
+  role: string | Record<string, unknown>;
   status: string;
   joinedAt?: string;
   /** Org display name surfaced by the backend transform when populated (findOne). */
   orgName?: string;
   plantIds?: { id?: string; _id?: string; name?: string; code?: string }[];
+  orgId: string | Record<string, unknown>;
 }
 
 export interface EndUser {

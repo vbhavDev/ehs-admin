@@ -10,8 +10,10 @@ import { useAuthStore } from '@/store/auth.store';
 const ALLOWED_ROLES = ['devops'];
 
 export default function PlatformSettingsPage() {
-  const { roleKey } = useAuthStore();
-  const isAllowed = !!roleKey && ALLOWED_ROLES.includes(roleKey);
+  const { user } = useAuthStore();
+  const isAllowed =
+    user?.roles?.some((r: { roleKey: string }) => ALLOWED_ROLES.includes(r.roleKey)) ||
+    (user?.role?.roleKey && ALLOWED_ROLES.includes(user.role.roleKey));
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
