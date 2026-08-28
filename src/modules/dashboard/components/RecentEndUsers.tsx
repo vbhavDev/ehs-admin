@@ -49,8 +49,13 @@ export const RecentEndUsers: React.FC<RecentEndUsersProps> = ({
         <ul className="divide-y divide-gray-100 dark:divide-navy-700">
           {endUsers.map((user) => {
             const activeMembership = user.orgMemberships?.find((m) => m.status === 'active');
-            const roleLabel = activeMembership?.role
-              ? END_USER_ROLE_LABELS[activeMembership.role] || activeMembership.role
+            let roleKey = activeMembership?.role as string | undefined;
+            if (typeof activeMembership?.role === 'object' && activeMembership.role !== null) {
+              const roleObj = activeMembership.role as { roleKey?: string; _id?: string };
+              roleKey = roleObj.roleKey || roleObj._id || String(roleObj);
+            }
+            const roleLabel = roleKey
+              ? END_USER_ROLE_LABELS[roleKey] || roleKey
               : user.isIndividualSubscriber
                 ? 'Individual'
                 : 'No Active Role';

@@ -13,11 +13,11 @@ export const hasPermission = (permission: string): boolean => {
   if (!permission) return true;
 
   // 1. Super Admin role check or top-level wildcard ('*' or '*.*')
-  if (
+  const isSuperAdmin =
     user?.role?.roleKey === 'super_admin' ||
-    permissions?.includes('*') ||
-    permissions?.includes('*.*')
-  ) {
+    user?.roles?.some((r: { roleKey?: string }) => r.roleKey === 'super_admin');
+
+  if (isSuperAdmin || permissions?.includes('*') || permissions?.includes('*.*')) {
     return true;
   }
 
@@ -59,11 +59,16 @@ export const hasPermission = (permission: string): boolean => {
 export const useHasPermission = (permission: string): boolean => {
   const permissions = useAuthStore((s) => s.permissions);
   const roleKey = useAuthStore((s) => s.user?.role?.roleKey);
+  const roles = useAuthStore((s) => s.user?.roles);
 
   return React.useMemo(() => {
     if (!permission) return true;
 
-    if (roleKey === 'super_admin' || permissions?.includes('*') || permissions?.includes('*.*')) {
+    const isSuperAdmin =
+      roleKey === 'super_admin' ||
+      roles?.some((r: { roleKey?: string }) => r.roleKey === 'super_admin');
+
+    if (isSuperAdmin || permissions?.includes('*') || permissions?.includes('*.*')) {
       return true;
     }
 
@@ -86,7 +91,7 @@ export const useHasPermission = (permission: string): boolean => {
     }
 
     return false;
-  }, [permission, permissions, roleKey]);
+  }, [permission, permissions, roleKey, roles]);
 };
 
 /**
