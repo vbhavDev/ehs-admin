@@ -14,6 +14,7 @@ import {
   ListChecks,
   Gauge,
   CalendarClock,
+  FileText,
 } from 'lucide-react';
 import {
   SubscriptionPlan,
@@ -65,6 +66,21 @@ export const SubscriptionPlanDetail: React.FC<SubscriptionPlanDetailProps> = ({
     { label: 'Video / inspection', value: formatPlanLimit(plan.maxVideoUploads), Icon: Video },
     { label: 'Plants / branches', value: formatPlanLimit(plan.maxPlants), Icon: Building2 },
     { label: 'Storage (GB)', value: formatPlanLimit(plan.maxStorageGB), Icon: HardDrive },
+    {
+      label: 'Max Image Size',
+      value: plan.maxImageSizeMB === -1 ? 'Unlimited' : `${plan.maxImageSizeMB ?? 10} MB`,
+      Icon: Images,
+    },
+    {
+      label: 'Max Video Size',
+      value: plan.maxVideoSizeMB === -1 ? 'Unlimited' : `${plan.maxVideoSizeMB ?? 50} MB`,
+      Icon: Video,
+    },
+    {
+      label: 'Max Doc Size',
+      value: plan.maxDocumentSizeMB === -1 ? 'Unlimited' : `${plan.maxDocumentSizeMB ?? 20} MB`,
+      Icon: FileText,
+    },
   ];
 
   return (

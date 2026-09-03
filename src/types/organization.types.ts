@@ -32,6 +32,9 @@ export interface Organization {
   maxInspectionsPerMonth?: number;
   maxImagesPerInspection?: number;
   maxVideoUploads?: number;
+  maxImageSizeMB?: number;
+  maxVideoSizeMB?: number;
+  maxDocumentSizeMB?: number;
   subscriptionPrice?: number;
   subscriptionFeatures?: string[];
   status: string;
@@ -90,6 +93,9 @@ export interface UpdateOrganizationData {
   maxInspectionsPerMonth?: number;
   maxImagesPerInspection?: number;
   maxVideoUploads?: number;
+  maxImageSizeMB?: number;
+  maxVideoSizeMB?: number;
+  maxDocumentSizeMB?: number;
   subscriptionPrice?: number;
   subscriptionFeatures?: string[];
   status?: string;

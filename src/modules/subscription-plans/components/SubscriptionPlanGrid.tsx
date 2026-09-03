@@ -14,6 +14,7 @@ import {
   Sparkles,
   Check,
   Inbox,
+  FileText,
 } from 'lucide-react';
 import {
   SubscriptionPlan,
@@ -33,12 +34,15 @@ interface SubscriptionPlanGridProps {
 }
 
 const LIMIT_ICONS = [
-  { key: 'maxInspectionsPerMonth', label: 'Inspections / mo', Icon: ClipboardCheck },
-  { key: 'maxUsers', label: 'Users', Icon: Users },
-  { key: 'maxImagesPerInspection', label: 'Images / inspection', Icon: Images },
-  { key: 'maxVideoUploads', label: 'Video / inspection', Icon: Video },
-  { key: 'maxPlants', label: 'Plants / branches', Icon: Building2 },
-  { key: 'maxStorageGB', label: 'Storage (GB)', Icon: HardDrive },
+  { key: 'maxInspectionsPerMonth', label: 'Inspections / mo', Icon: ClipboardCheck, suffix: '' },
+  { key: 'maxUsers', label: 'Users', Icon: Users, suffix: '' },
+  { key: 'maxImagesPerInspection', label: 'Images / inspection', Icon: Images, suffix: '' },
+  { key: 'maxVideoUploads', label: 'Video / inspection', Icon: Video, suffix: '' },
+  { key: 'maxPlants', label: 'Plants / branches', Icon: Building2, suffix: '' },
+  { key: 'maxStorageGB', label: 'Storage (GB)', Icon: HardDrive, suffix: '' },
+  { key: 'maxImageSizeMB', label: 'Max Image Size', Icon: Images, suffix: ' MB' },
+  { key: 'maxVideoSizeMB', label: 'Max Video Size', Icon: Video, suffix: ' MB' },
+  { key: 'maxDocumentSizeMB', label: 'Max Doc Size', Icon: FileText, suffix: ' MB' },
 ] as const;
 
 function PlanCardSkeleton() {
@@ -190,20 +194,25 @@ export const SubscriptionPlanGrid: React.FC<SubscriptionPlanGridProps> = ({
                   </div>
 
                   <ul className="mt-5 space-y-2.5 border-t border-gray-100 pt-4 dark:border-navy-700">
-                    {LIMIT_ICONS.map(({ key, label, Icon }) => (
-                      <li
-                        key={key}
-                        className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300"
-                      >
-                        <span className="flex items-center gap-2.5">
-                          <Icon size={16} className="text-gray-400" />
-                          {label}
-                        </span>
-                        <span className="font-semibold text-gray-800 dark:text-gray-100">
-                          {formatPlanLimit(plan[key] as number)}
-                        </span>
-                      </li>
-                    ))}
+                    {LIMIT_ICONS.map(({ key, label, Icon, suffix }) => {
+                      const val = plan[key as keyof SubscriptionPlan] as number;
+                      const formatted = formatPlanLimit(val);
+                      return (
+                        <li
+                          key={key}
+                          className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300"
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <Icon size={16} className="text-gray-400" />
+                            {label}
+                          </span>
+                          <span className="font-semibold text-gray-800 dark:text-gray-100">
+                            {formatted}
+                            {val !== -1 && suffix ? suffix : ''}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
 
                   {features.length > 0 && (
