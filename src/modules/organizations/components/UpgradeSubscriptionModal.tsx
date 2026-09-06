@@ -15,6 +15,9 @@ import {
   Layers,
   ChevronDown,
   Check,
+  Images,
+  Video,
+  FileText,
 } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import Button from '@/components/ui/button/Button';
@@ -133,6 +136,11 @@ export const UpgradeSubscriptionModal: React.FC<UpgradeSubscriptionModalProps> =
     organization.maxImagesPerInspection || 10,
   );
   const [maxVideoUploads, setMaxVideoUploads] = useState<number>(organization.maxVideoUploads || 5);
+  const [maxImageSizeMB, setMaxImageSizeMB] = useState<number>(organization.maxImageSizeMB ?? 10);
+  const [maxVideoSizeMB, setMaxVideoSizeMB] = useState<number>(organization.maxVideoSizeMB ?? 50);
+  const [maxDocumentSizeMB, setMaxDocumentSizeMB] = useState<number>(
+    organization.maxDocumentSizeMB ?? 20,
+  );
 
   // Pricing & Features
   const [pricingAmount, setPricingAmount] = useState<number>(organization.subscriptionPrice || 0);
@@ -213,6 +221,9 @@ export const UpgradeSubscriptionModal: React.FC<UpgradeSubscriptionModalProps> =
       setMaxInspectionsPerMonth(targetPlan.maxInspectionsPerMonth ?? -1);
       setMaxImagesPerInspection(targetPlan.maxImagesPerInspection ?? 10);
       setMaxVideoUploads(targetPlan.maxVideoUploads ?? 5);
+      setMaxImageSizeMB(targetPlan.maxImageSizeMB ?? 10);
+      setMaxVideoSizeMB(targetPlan.maxVideoSizeMB ?? 50);
+      setMaxDocumentSizeMB(targetPlan.maxDocumentSizeMB ?? 20);
 
       // Pre-fill pricing
       if (targetPlan.isCustomPricing) {
@@ -285,6 +296,9 @@ export const UpgradeSubscriptionModal: React.FC<UpgradeSubscriptionModalProps> =
         maxInspectionsPerMonth,
         maxImagesPerInspection,
         maxVideoUploads,
+        maxImageSizeMB,
+        maxVideoSizeMB,
+        maxDocumentSizeMB,
         subscriptionPrice: pricingAmount,
         subscriptionFeatures: selectedFeatures,
         status: 'active',
@@ -566,6 +580,48 @@ export const UpgradeSubscriptionModal: React.FC<UpgradeSubscriptionModalProps> =
                 className="w-full px-3 py-1.5 text-sm font-bold rounded-lg border border-gray-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-gray-900 dark:text-white"
               />
               <span className="text-[10px] text-gray-500 mt-1 block">Cloud media limit</span>
+            </div>
+          </div>
+
+          {/* File Size Limits */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3">
+            <div className="p-3.5 bg-gray-50 dark:bg-navy-900/60 rounded-xl border border-gray-100 dark:border-navy-700">
+              <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
+                <Images size={14} className="text-brand-500" /> Max Image Size (MB)
+              </label>
+              <input
+                type="number"
+                value={maxImageSizeMB}
+                onChange={(e) => setMaxImageSizeMB(parseInt(e.target.value) || -1)}
+                className="w-full px-3 py-1.5 text-sm font-bold rounded-lg border border-gray-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-gray-900 dark:text-white"
+              />
+              <span className="text-[10px] text-gray-500 mt-1 block">-1 for Unlimited</span>
+            </div>
+
+            <div className="p-3.5 bg-gray-50 dark:bg-navy-900/60 rounded-xl border border-gray-100 dark:border-navy-700">
+              <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
+                <Video size={14} className="text-indigo-500" /> Max Video Size (MB)
+              </label>
+              <input
+                type="number"
+                value={maxVideoSizeMB}
+                onChange={(e) => setMaxVideoSizeMB(parseInt(e.target.value) || -1)}
+                className="w-full px-3 py-1.5 text-sm font-bold rounded-lg border border-gray-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-gray-900 dark:text-white"
+              />
+              <span className="text-[10px] text-gray-500 mt-1 block">-1 for Unlimited</span>
+            </div>
+
+            <div className="p-3.5 bg-gray-50 dark:bg-navy-900/60 rounded-xl border border-gray-100 dark:border-navy-700">
+              <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
+                <FileText size={14} className="text-emerald-500" /> Max Doc Size (MB)
+              </label>
+              <input
+                type="number"
+                value={maxDocumentSizeMB}
+                onChange={(e) => setMaxDocumentSizeMB(parseInt(e.target.value) || -1)}
+                className="w-full px-3 py-1.5 text-sm font-bold rounded-lg border border-gray-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-gray-900 dark:text-white"
+              />
+              <span className="text-[10px] text-gray-500 mt-1 block">-1 for Unlimited</span>
             </div>
           </div>
         </div>

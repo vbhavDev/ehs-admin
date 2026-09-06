@@ -360,6 +360,30 @@ export const OrganizationSubscriptionSection: React.FC<OrganizationSubscriptionS
                   <strong className="text-brand-500">{organization.maxVideoUploads ?? 5}</strong>{' '}
                   per report
                 </span>
+                <span className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-navy-700 font-semibold">
+                  Max Img:{' '}
+                  <strong className="text-brand-500">
+                    {organization.maxImageSizeMB === -1
+                      ? 'Unlimited'
+                      : `${organization.maxImageSizeMB ?? 10} MB`}
+                  </strong>
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-navy-700 font-semibold">
+                  Max Vid:{' '}
+                  <strong className="text-brand-500">
+                    {organization.maxVideoSizeMB === -1
+                      ? 'Unlimited'
+                      : `${organization.maxVideoSizeMB ?? 50} MB`}
+                  </strong>
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-navy-700 font-semibold">
+                  Max Doc:{' '}
+                  <strong className="text-brand-500">
+                    {organization.maxDocumentSizeMB === -1
+                      ? 'Unlimited'
+                      : `${organization.maxDocumentSizeMB ?? 20} MB`}
+                  </strong>
+                </span>
               </div>
 
               {/* Coverage Badges */}

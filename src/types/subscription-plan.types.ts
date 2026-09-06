@@ -20,6 +20,9 @@ export interface SubscriptionPlan {
   maxUsers: number;
   maxPlants?: number;
   maxStorageGB?: number;
+  maxImageSizeMB?: number;
+  maxVideoSizeMB?: number;
+  maxDocumentSizeMB?: number;
   features: string[];
   pricing: PlanPricing[];
   defaultCurrency: string;
@@ -48,6 +51,9 @@ export interface CreateSubscriptionPlanData {
   maxUsers: number;
   maxPlants?: number;
   maxStorageGB?: number;
+  maxImageSizeMB?: number;
+  maxVideoSizeMB?: number;
+  maxDocumentSizeMB?: number;
   features?: string[];
   pricing?: PlanPricing[];
   defaultCurrency?: string;
@@ -63,6 +69,9 @@ export interface UpdateSubscriptionPlanData {
   maxUsers?: number;
   maxPlants?: number;
   maxStorageGB?: number;
+  maxImageSizeMB?: number;
+  maxVideoSizeMB?: number;
+  maxDocumentSizeMB?: number;
   features?: string[];
   pricing?: PlanPricing[];
   defaultCurrency?: string;

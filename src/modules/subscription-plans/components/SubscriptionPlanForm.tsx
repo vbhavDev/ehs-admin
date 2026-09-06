@@ -22,6 +22,7 @@ import {
   HardDrive,
   Check,
   Info,
+  FileText,
 } from 'lucide-react';
 import Input from '@/components/form/input/InputField';
 import Label from '@/components/form/Label';
@@ -48,6 +49,9 @@ const planSchema = z.object({
   maxUsers: z.coerce.number().min(-1, 'Set -1 or greater'),
   maxPlants: z.coerce.number().min(-1, 'Set -1 or greater'),
   maxStorageGB: z.coerce.number().min(-1, 'Set -1 or greater'),
+  maxImageSizeMB: z.coerce.number().min(-1, 'Set -1 or greater'),
+  maxVideoSizeMB: z.coerce.number().min(-1, 'Set -1 or greater'),
+  maxDocumentSizeMB: z.coerce.number().min(-1, 'Set -1 or greater'),
   defaultCurrency: z.string().min(1, 'Default currency is required'),
   isActive: z.boolean(),
   isCustomPricing: z.boolean(),
@@ -130,6 +134,9 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
           maxUsers: initialData.maxUsers,
           maxPlants: initialData.maxPlants ?? 1,
           maxStorageGB: initialData.maxStorageGB ?? 10,
+          maxImageSizeMB: initialData.maxImageSizeMB ?? 10,
+          maxVideoSizeMB: initialData.maxVideoSizeMB ?? 50,
+          maxDocumentSizeMB: initialData.maxDocumentSizeMB ?? 20,
           defaultCurrency: initialData.defaultCurrency,
           isActive: initialData.isActive,
           isCustomPricing: initialData.isCustomPricing ?? false,
@@ -143,6 +150,9 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
           maxUsers: 1,
           maxPlants: 1,
           maxStorageGB: 10,
+          maxImageSizeMB: 10,
+          maxVideoSizeMB: 50,
+          maxDocumentSizeMB: 20,
           defaultCurrency: 'INR',
           isActive: true,
           isCustomPricing: false,
@@ -302,6 +312,24 @@ export const SubscriptionPlanForm: React.FC<SubscriptionPlanFormProps> = ({ init
       label: 'Storage (GB)',
       hint: 'Stores reports, videos & images. Set -1 for unlimited',
       Icon: HardDrive,
+    },
+    {
+      name: 'maxImageSizeMB' as const,
+      label: 'Max Image File Size (MB)',
+      hint: 'Set -1 for unlimited (Default: 10 MB)',
+      Icon: Images,
+    },
+    {
+      name: 'maxVideoSizeMB' as const,
+      label: 'Max Video File Size (MB)',
+      hint: 'Set -1 for unlimited (Default: 50 MB)',
+      Icon: Video,
+    },
+    {
+      name: 'maxDocumentSizeMB' as const,
+      label: 'Max Document File Size (MB)',
+      hint: 'Set -1 for unlimited (Default: 20 MB)',
+      Icon: FileText,
     },
   ];
 
