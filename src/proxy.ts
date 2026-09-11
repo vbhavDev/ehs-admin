@@ -25,18 +25,18 @@ function decodeJwt(token: string) {
         .join(''),
     );
     return JSON.parse(jsonPayload);
-  } catch (e) {
+  } catch {
     return null;
   }
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const token =
     request.cookies.get('access_token')?.value || request.cookies.get('auth_token')?.value;
 
-  // Skip middleware for public assets and api routes
+  // Skip proxy for public assets and api routes
   if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.match(/\.(.*)$/)) {
     return NextResponse.next();
   }
