@@ -16,6 +16,7 @@ import {
   Download,
   Check,
   ExternalLink,
+  Globe,
 } from 'lucide-react';
 import {
   Language,
@@ -47,7 +48,7 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
   onSaveCatalog,
 }) => {
   const [step, setStep] = useState<'config' | 'review'>('config');
-  const [provider, setProvider] = useState<'gemini' | 'openai'>('gemini');
+  const [provider, setProvider] = useState<'google' | 'gemini' | 'openai'>('google');
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
   const [rememberKey, setRememberKey] = useState(true);
@@ -88,8 +89,12 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
     }
   }, [provider, isOpen]);
 
-  const handleProviderChange = (newProvider: 'gemini' | 'openai') => {
+  const handleProviderChange = (newProvider: 'google' | 'gemini' | 'openai') => {
     setProvider(newProvider);
+    if (newProvider === 'google') {
+      setApiKey('');
+      return;
+    }
     if (typeof window !== 'undefined') {
       const stored =
         newProvider === 'gemini'
@@ -111,10 +116,13 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
   const handleGenerate = async () => {
     if (!language) return;
 
-    const currentPlugin = aiStatus ? aiStatus[provider] : null;
-    if (currentPlugin && !currentPlugin.isEnabled) {
-      toast.error('AI Plugin is disabled please contact admin for enabling.');
-      return;
+    // Google Translate doesn't need plugin check
+    if (provider !== 'google') {
+      const currentPlugin = aiStatus ? aiStatus[provider] : null;
+      if (currentPlugin && !currentPlugin.isEnabled) {
+        toast.error('AI Plugin is disabled please contact admin for enabling.');
+        return;
+      }
     }
 
     try {
@@ -334,7 +342,7 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               {step === 'config'
-                ? 'Generate native translation dictionary using Gemini or OpenAI'
+                ? 'Generate translation using Google Translate, Gemini, or OpenAI'
                 : 'Review, edit, and approve translated strings before publishing'}
             </p>
           </div>
@@ -384,7 +392,7 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                Select AI Engine (Pulled from Plugins)
+                Select Translation Engine
               </label>
               <a
                 href="/plugins"
@@ -396,7 +404,33 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
                 <span>→</span>
               </a>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
+              {/* Google Translate (Free) */}
+              <button
+                type="button"
+                onClick={() => handleProviderChange('google')}
+                className={`flex flex-col items-start p-4 rounded-xl border text-left transition-all ${
+                  provider === 'google'
+                    ? 'border-brand-500 bg-brand-50/40 dark:bg-brand-500/10 ring-2 ring-brand-500/20'
+                    : 'border-gray-200 hover:border-gray-300 dark:border-navy-700'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full mb-2">
+                  <div className="flex items-center gap-2">
+                    <Globe size={18} className="text-blue-600 dark:text-blue-400" />
+                    <span className="font-bold text-sm text-gray-900 dark:text-white">
+                      Google Translate
+                    </span>
+                  </div>
+                  <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400">
+                    Free
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Free translation — no API key required. Instant results powered by Google.
+                </p>
+              </button>
+
               <button
                 type="button"
                 onClick={() => handleProviderChange('gemini')}
@@ -424,7 +458,7 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
                   )}
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Ultra-fast Gemini 3.6 Flash with structured JSON output and deep domain context.
+                  AI-powered with EHS domain context and structured JSON output.
                 </p>
               </button>
 
@@ -453,14 +487,14 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
                   )}
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  OpenAI GPT-4o with json_object enforcement and high translation accuracy.
+                  OpenAI GPT-4o with json_object enforcement and high accuracy.
                 </p>
               </button>
             </div>
           </div>
 
-          {/* Plugin Status Alert Banner */}
-          {aiStatus && !aiStatus[provider]?.isEnabled ? (
+          {/* Plugin Status Alert Banner — only for AI providers, not Google */}
+          {provider !== 'google' && aiStatus && !aiStatus[provider]?.isEnabled ? (
             <div className="p-4 rounded-xl border border-error-300 dark:border-error-500/30 bg-error-50/90 dark:bg-error-500/10 flex items-start gap-3">
               <AlertCircle
                 size={20}
@@ -493,7 +527,10 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
                 </div>
               </div>
             </div>
-          ) : aiStatus && aiStatus[provider]?.isEnabled && aiStatus[provider]?.hasKey ? (
+          ) : provider !== 'google' &&
+            aiStatus &&
+            aiStatus[provider]?.isEnabled &&
+            aiStatus[provider]?.hasKey ? (
             <div className="p-3.5 rounded-xl border border-success-200 dark:border-success-500/30 bg-success-50/70 dark:bg-success-500/10 flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
                 <CheckCircle2
@@ -514,72 +551,84 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
                 Plugin Settings →
               </a>
             </div>
-          ) : null}
-
-          {/* API Key Input */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                {provider === 'gemini' ? 'Gemini API Key' : 'OpenAI API Key'} (Optional)
-              </label>
-              <span className="text-[11px] text-gray-400">
-                Leave blank to use server environment key
+          ) : provider === 'google' ? (
+            <div className="p-3.5 rounded-xl border border-blue-200 dark:border-blue-500/30 bg-blue-50/70 dark:bg-blue-500/10 flex items-center gap-2 text-xs">
+              <CheckCircle2 size={16} className="text-blue-600 dark:text-blue-400 shrink-0" />
+              <span className="text-blue-900 dark:text-blue-200">
+                <strong>Google Translate</strong> is free and ready to use — no API key or plugin
+                required.
               </span>
             </div>
-            <div className="relative">
-              <Input
-                type={showApiKey ? 'text' : 'password'}
-                placeholder={`Paste ${provider === 'gemini' ? 'AIzaSy...' : 'sk-...'} key (optional)`}
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="pr-10 font-mono text-xs"
-              />
-              <button
-                type="button"
-                onClick={() => setShowApiKey(!showApiKey)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-              >
-                {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberKey}
-                  onChange={(e) => setRememberKey(e.target.checked)}
-                  className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-                />
-                Remember this key in my browser
-              </label>
-              <a
-                href={
-                  provider === 'gemini'
-                    ? 'https://aistudio.google.com/app/apikey'
-                    : 'https://platform.openai.com/api-keys'
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-brand-600 hover:underline"
-              >
-                Get {provider === 'gemini' ? 'Gemini' : 'OpenAI'} Key →
-              </a>
-            </div>
-          </div>
+          ) : null}
 
-          {/* Custom Guidelines */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
-              Custom Translation Guidelines (Optional)
-            </label>
-            <textarea
-              rows={2}
-              placeholder="e.g. Use formal French phrasing; prioritize industrial factory inspection safety terminology..."
-              value={customGuidelines}
-              onChange={(e) => setCustomGuidelines(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 dark:border-navy-700 bg-transparent p-3 text-xs text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:border-brand-500 focus:outline-none"
-            />
-          </div>
+          {/* API Key Input — only for AI providers */}
+          {provider !== 'google' && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  {provider === 'gemini' ? 'Gemini API Key' : 'OpenAI API Key'} (Optional)
+                </label>
+                <span className="text-[11px] text-gray-400">
+                  Leave blank to use server environment key
+                </span>
+              </div>
+              <div className="relative">
+                <Input
+                  type={showApiKey ? 'text' : 'password'}
+                  placeholder={`Paste ${provider === 'gemini' ? 'AIzaSy...' : 'sk-...'} key (optional)`}
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  className="pr-10 font-mono text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rememberKey}
+                    onChange={(e) => setRememberKey(e.target.checked)}
+                    className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                  />
+                  Remember this key in my browser
+                </label>
+                <a
+                  href={
+                    provider === 'gemini'
+                      ? 'https://aistudio.google.com/app/apikey'
+                      : 'https://platform.openai.com/api-keys'
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-brand-600 hover:underline"
+                >
+                  Get {provider === 'gemini' ? 'Gemini' : 'OpenAI'} Key →
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Custom Guidelines — only for AI providers */}
+          {provider !== 'google' && (
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
+                Custom Translation Guidelines (Optional)
+              </label>
+              <textarea
+                rows={2}
+                placeholder="e.g. Use formal French phrasing; prioritize industrial factory inspection safety terminology..."
+                value={customGuidelines}
+                onChange={(e) => setCustomGuidelines(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 dark:border-navy-700 bg-transparent p-3 text-xs text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+          )}
 
           {/* Safety Notice */}
           <div className="p-3.5 rounded-xl border border-blue-100 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-500/5 text-xs text-blue-800 dark:text-blue-300 flex items-start gap-2.5">
@@ -601,9 +650,12 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
             <Button
               type="button"
               onClick={handleGenerate}
-              disabled={isGenerating || (!!aiStatus && !aiStatus[provider]?.isEnabled)}
+              disabled={
+                isGenerating ||
+                (provider !== 'google' && !!aiStatus && !aiStatus[provider]?.isEnabled)
+              }
               title={
-                aiStatus && !aiStatus[provider]?.isEnabled
+                provider !== 'google' && aiStatus && !aiStatus[provider]?.isEnabled
                   ? 'AI Plugin is disabled please contact admin for enabling.'
                   : undefined
               }
@@ -612,9 +664,11 @@ export const AiTranslateModal: React.FC<AiTranslateModalProps> = ({
               <Sparkles size={16} className={isGenerating ? 'animate-spin' : ''} />
               {isGenerating
                 ? 'Translating entire catalog...'
-                : aiStatus && !aiStatus[provider]?.isEnabled
+                : provider !== 'google' && aiStatus && !aiStatus[provider]?.isEnabled
                   ? 'AI Plugin Disabled'
-                  : '✨ Generate Translation'}
+                  : provider === 'google'
+                    ? '🌐 Generate with Google Translate'
+                    : '✨ Generate Translation'}
             </Button>
           </div>
         </div>

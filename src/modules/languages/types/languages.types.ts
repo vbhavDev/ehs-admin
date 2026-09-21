@@ -50,7 +50,7 @@ export interface ImportCatalogResult {
 export interface AiGenerateTranslationDto {
   targetCode: string;
   targetName: string;
-  provider?: 'gemini' | 'openai';
+  provider?: 'google' | 'gemini' | 'openai';
   apiKey?: string;
   sourceCode?: string;
   customGuidelines?: string;
@@ -75,6 +75,7 @@ export interface AiPluginStatus {
 }
 
 export interface AiStatusResponse {
+  google: AiPluginStatus;
   gemini: AiPluginStatus;
   openai: AiPluginStatus;
 }
