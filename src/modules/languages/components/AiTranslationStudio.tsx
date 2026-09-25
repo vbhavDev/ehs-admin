@@ -25,6 +25,7 @@ import {
   ExternalLink,
   Edit3,
   Undo2,
+  Globe,
 } from 'lucide-react';
 import Button from '@/components/ui/button/Button';
 import Input from '@/components/form/input/InputField';
@@ -74,7 +75,7 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
   const [selectedLanguageCode, setSelectedLanguageCode] = useState<string>(initialCode || '');
 
   // Configuration state
-  const [provider, setProvider] = useState<'gemini' | 'openai'>('gemini');
+  const [provider, setProvider] = useState<'google' | 'gemini' | 'openai'>('google');
   const [apiKey, setApiKey] = useState('');
   const [customGuidelines, setCustomGuidelines] = useState('');
   const [aiStatus, setAiStatus] = useState<AiStatusResponse | null>(null);
@@ -124,7 +125,9 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
         setIsLoadingStatus(true);
         const res = await languagesService.getAiStatus();
         setAiStatus(res);
-        if (res.gemini?.isEnabled) {
+        if (res.google?.isEnabled) {
+          setProvider('google');
+        } else if (res.gemini?.isEnabled) {
           setProvider('gemini');
         } else if (res.openai?.isEnabled) {
           setProvider('openai');
@@ -157,21 +160,26 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
   useEffect(() => {
     const storedGemini = localStorage.getItem('ehs_gemini_api_key') || '';
     const storedOpenAi = localStorage.getItem('ehs_openai_api_key') || '';
+    const storedGoogle = localStorage.getItem('ehs_google_api_key') || '';
     if (provider === 'gemini' && storedGemini) {
       setApiKey(storedGemini);
     } else if (provider === 'openai' && storedOpenAi) {
       setApiKey(storedOpenAi);
+    } else if (provider === 'google' && storedGoogle) {
+      setApiKey(storedGoogle);
     } else {
       setApiKey('');
     }
   }, [provider]);
 
-  const handleProviderChange = (p: 'gemini' | 'openai') => {
+  const handleProviderChange = (p: 'google' | 'gemini' | 'openai') => {
     setProvider(p);
     const key =
       p === 'gemini'
         ? localStorage.getItem('ehs_gemini_api_key') || ''
-        : localStorage.getItem('ehs_openai_api_key') || '';
+        : p === 'openai'
+          ? localStorage.getItem('ehs_openai_api_key') || ''
+          : localStorage.getItem('ehs_google_api_key') || '';
     setApiKey(key);
   };
 
@@ -194,7 +202,13 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
     }
 
     // Check plugin enablement rule
-    const currentPlugin = provider === 'gemini' ? aiStatus?.gemini : aiStatus?.openai;
+    const currentPlugin =
+      provider === 'google'
+        ? aiStatus?.google
+        : provider === 'gemini'
+          ? aiStatus?.gemini
+          : aiStatus?.openai;
+
     if (currentPlugin && !currentPlugin.isEnabled) {
       toast.error('AI Plugin is disabled please contact admin for enabling.');
       return;
@@ -202,10 +216,13 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
 
     // Save optional key in localStorage if provided
     if (apiKey.trim()) {
-      localStorage.setItem(
-        provider === 'gemini' ? 'ehs_gemini_api_key' : 'ehs_openai_api_key',
-        apiKey.trim(),
-      );
+      const storageKey =
+        provider === 'gemini'
+          ? 'ehs_gemini_api_key'
+          : provider === 'openai'
+            ? 'ehs_openai_api_key'
+            : 'ehs_google_api_key';
+      localStorage.setItem(storageKey, apiKey.trim());
     }
 
     setStep('generating');
@@ -215,9 +232,13 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
     try {
       await new Promise((r) => setTimeout(r, 400));
       setGenerationProgress(35);
-      setGenerationStage(
-        `Connecting to ${provider === 'gemini' ? 'Google Gemini 3.6 Flash' : 'OpenAI GPT-4o'}...`,
-      );
+      const providerLabel =
+        provider === 'google'
+          ? 'Google Translation Engine'
+          : provider === 'gemini'
+            ? 'Google Gemini 3.6 Flash'
+            : 'OpenAI GPT-4o';
+      setGenerationStage(`Connecting to ${providerLabel}...`);
 
       await new Promise((r) => setTimeout(r, 400));
       setGenerationProgress(60);
@@ -689,8 +710,47 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
                   )}
                 </div>
 
-                {/* Gemini 3.6 Flash Card */}
+                {/* Model / Engine Cards */}
                 <div className="space-y-3">
+                  {/* Google Translate Card */}
+                  <button
+                    type="button"
+                    onClick={() => handleProviderChange('google')}
+                    className={`w-full p-4 rounded-xl border text-left transition-all relative ${
+                      provider === 'google'
+                        ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-500/10 ring-2 ring-brand-500/30'
+                        : 'border-gray-200 dark:border-navy-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="p-1 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold text-xs flex items-center justify-center w-6 h-6">
+                          <Globe size={14} />
+                        </span>
+                        <span className="font-bold text-sm text-gray-900 dark:text-white">
+                          Google Translate
+                        </span>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                          Free / Cloud API
+                        </span>
+                      </div>
+                      {aiStatus?.google?.isEnabled ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 flex items-center gap-1">
+                          <CheckCircle2 size={10} /> Active
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-error-100 text-error-800 dark:bg-error-900/40 dark:text-error-300">
+                          Disabled
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Fast multi-language neural translation. Works out-of-the-box for free, with
+                      optional Cloud Translation key.
+                    </p>
+                  </button>
+
+                  {/* Gemini 3.6 Flash Card */}
                   <button
                     type="button"
                     onClick={() => handleProviderChange('gemini')}
@@ -702,8 +762,8 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="p-1 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold text-xs">
-                          G
+                        <span className="p-1 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 font-bold text-xs flex items-center justify-center w-6 h-6">
+                          <Sparkles size={14} />
                         </span>
                         <span className="font-bold text-sm text-gray-900 dark:text-white">
                           Google Gemini 3.6 Flash
@@ -723,7 +783,7 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
                       )}
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      High-throughput model with native JSON mode, low latency, and OSHA/ISO
+                      High-throughput GenAI model with native JSON mode, low latency, and OSHA/ISO
                       terminology comprehension.
                     </p>
                   </button>
@@ -740,8 +800,8 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="p-1 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                          O
+                        <span className="p-1 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center w-6 h-6">
+                          <Bot size={14} />
                         </span>
                         <span className="font-bold text-sm text-gray-900 dark:text-white">
                           OpenAI GPT-4o-mini
@@ -765,14 +825,20 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
                 </div>
 
                 {/* Disabled Warning banner */}
-                {((provider === 'gemini' && !aiStatus?.gemini?.isEnabled) ||
-                  (provider === 'openai' && !aiStatus?.openai?.isEnabled)) && (
+                {((provider === 'google' && aiStatus?.google && !aiStatus.google.isEnabled) ||
+                  (provider === 'gemini' && aiStatus?.gemini && !aiStatus.gemini.isEnabled) ||
+                  (provider === 'openai' && aiStatus?.openai && !aiStatus.openai.isEnabled)) && (
                   <div className="mt-4 p-3.5 rounded-xl bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 text-error-800 dark:text-error-300 text-xs flex items-start gap-2.5">
                     <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="font-semibold">AI Plugin is disabled</p>
                       <p className="mt-0.5">
-                        Please enable the {provider === 'gemini' ? 'Google Gemini' : 'OpenAI'}{' '}
+                        Please enable the{' '}
+                        {provider === 'google'
+                          ? 'Google Translate'
+                          : provider === 'gemini'
+                            ? 'Google Gemini'
+                            : 'OpenAI'}{' '}
                         plugin in{' '}
                         <Link
                           href="/plugins"
@@ -793,11 +859,13 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
                     <span className="text-gray-400 font-normal">Optional</span>
                   </label>
                   <p className="text-[11px] text-gray-400 mb-2">
-                    Leave blank to automatically pull keys configured in the active Plugin record.
+                    {provider === 'google'
+                      ? 'Optional: provide a Google Cloud Translation API key (Free mode is used by default).'
+                      : 'Leave blank to automatically pull keys configured in the active Plugin record.'}
                   </p>
                   <Input
                     type="password"
-                    placeholder={`Paste ${provider === 'gemini' ? 'Gemini AIzaSy...' : 'sk-...'} key (optional)`}
+                    placeholder={`Paste ${provider === 'google' ? 'Google API Key (optional)' : provider === 'gemini' ? 'Gemini AIzaSy...' : 'sk-...'} key`}
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                   />
@@ -857,7 +925,12 @@ export const AiTranslationStudio: React.FC<AiTranslationStudioProps> = ({ initia
               <strong className="text-gray-900 dark:text-white">
                 {selectedLanguage?.name} ({selectedLanguage?.code})
               </strong>{' '}
-              via {provider === 'gemini' ? 'Gemini 3.6 Flash' : 'OpenAI GPT-4o'}
+              via{' '}
+              {provider === 'google'
+                ? 'Google Translation Engine'
+                : provider === 'gemini'
+                  ? 'Gemini 3.6 Flash'
+                  : 'OpenAI GPT-4o'}
             </p>
 
             {/* Progress Bar */}
