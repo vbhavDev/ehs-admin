@@ -11,6 +11,7 @@ import { ToasterProvider } from '@/components/providers/ToasterProvider';
 import { ModalProvider } from '@/context/ModalContext';
 import { GlobalModal } from '@/components/ui/modal/GlobalModal';
 import { ADMIN_THEME_BOOT_SCRIPT } from '@/lib/theme-boot';
+import { DOM_TRANSLATE_PATCH_SCRIPT } from '@/lib/dom-translate-patch';
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -41,6 +42,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${roboto.variable} ${openSans.variable}`} suppressHydrationWarning>
       <head>
+        {/* DOM Translate Patch — prevents React removeChild / insertBefore crashes from Google Translate / browser extensions */}
+        <script dangerouslySetInnerHTML={{ __html: DOM_TRANSLATE_PATCH_SCRIPT }} />
         {/* Pre-paint brand restore — applies the cached colors from the
             previous session (works on the logged-out login page too), so
             there is no default-red flash while the settings fetch runs. */}
