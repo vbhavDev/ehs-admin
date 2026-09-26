@@ -122,7 +122,7 @@ export const FileTable: React.FC<FileTableProps> = ({ params, onParamsChange }) 
         accessor: (file) => (
           <Badge
             color={
-              file.status === FileStatus.READY
+              file.status === FileStatus.READY || file.status === FileStatus.PROCESSED
                 ? 'success'
                 : file.status === FileStatus.PROCESSING
                   ? 'warning'
