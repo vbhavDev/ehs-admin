@@ -1,5 +1,6 @@
 export enum FileStatus {
   PROCESSING = 'processing',
+  PROCESSED = 'processed',
   READY = 'ready',
   FAILED = 'failed',
 }
