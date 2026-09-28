@@ -6,11 +6,13 @@ import { EyeOff, AlertTriangle } from 'lucide-react';
 interface ScreenshotWarningOverlayProps {
   isBlurred: boolean;
   screenshotWarning: boolean;
+  onMouseEnter?: () => void;
 }
 
 export const ScreenshotWarningOverlay: React.FC<ScreenshotWarningOverlayProps> = ({
   isBlurred,
   screenshotWarning,
+  onMouseEnter,
 }) => {
   if (!isBlurred && !screenshotWarning) return null;
 
@@ -18,7 +20,11 @@ export const ScreenshotWarningOverlay: React.FC<ScreenshotWarningOverlayProps> =
     <>
       {/* 1. Window Unfocused / Screen-capture opaque protective curtain */}
       {isBlurred && !screenshotWarning && (
-        <div className="fixed inset-0 z-[9999999] flex items-center justify-center bg-gray-950 text-white select-none transition-none">
+        <div
+          onMouseEnter={onMouseEnter}
+          onMouseMove={onMouseEnter}
+          className="fixed inset-0 z-[9999999] flex items-center justify-center bg-gray-950 text-white select-none transition-none"
+        >
           <div className="flex flex-col items-center gap-3 text-center p-6 max-w-sm">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-900 border border-gray-800 text-brand-400 shadow-xl">
               <EyeOff size={36} />

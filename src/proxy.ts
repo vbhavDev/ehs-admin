@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // All public (unauthenticated) paths
 const publicPaths = [
@@ -25,7 +25,7 @@ function decodeJwt(token: string) {
         .join(''),
     );
     return JSON.parse(jsonPayload);
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -36,7 +36,7 @@ export function proxy(request: NextRequest) {
   const token =
     request.cookies.get('access_token')?.value || request.cookies.get('auth_token')?.value;
 
-  // Skip middleware for public assets and api routes
+  // Skip proxy for public assets and api routes
   if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.match(/\.(.*)$/)) {
     return NextResponse.next();
   }

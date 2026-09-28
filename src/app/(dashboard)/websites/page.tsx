@@ -9,7 +9,9 @@ import { useAuthStore } from '@/store/auth.store';
 export default function WebsitesPage() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const isSuperAdmin = user?.role?.roleKey === 'super_admin';
+  const isSuperAdmin =
+    user?.role?.roleKey === 'super_admin' ||
+    user?.roles?.some((r: { roleKey?: string }) => r.roleKey === 'super_admin');
 
   return (
     <div className="space-y-6">

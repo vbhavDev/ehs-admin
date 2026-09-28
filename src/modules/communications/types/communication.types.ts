@@ -52,6 +52,7 @@ export interface ProviderSyncInfo {
 
 export interface MessageTemplate {
   id: string;
+  _id?: string;
   name: string;
   slug: string;
   channel: CommunicationChannel;
@@ -264,16 +265,17 @@ export interface SchemaDiscoveryResult {
 }
 
 export enum VariableCategoryGroup {
-  REGISTRATION = 'REGISTRATION',
-  NOMINATION = 'NOMINATION',
-  EVENT = 'EVENT',
-  BLOG = 'BLOG',
-  CONTACT = 'CONTACT',
-  SPONSOR = 'SPONSOR',
-  WEBSITE = 'WEBSITE',
-  REPORT = 'REPORT',
-  ATTENDEE = 'ATTENDEE',
+  END_USER = 'END_USER',
+  ORGANIZATION = 'ORGANIZATION',
+  INVITATION = 'INVITATION',
+  SUBSCRIPTION_PLAN = 'SUBSCRIPTION_PLAN',
+  SUBSCRIPTION = 'SUBSCRIPTION',
+  CURRENCY = 'CURRENCY',
+  SYSTEM_USER = 'SYSTEM_USER',
+  SYSTEM_EVENT = 'SYSTEM_EVENT',
   SYSTEM = 'SYSTEM',
+  AUTH = 'AUTH',
+  ROLE = 'ROLE',
   OTHER = 'OTHER',
 }
 

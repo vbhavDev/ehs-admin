@@ -10,51 +10,69 @@ import {
   Layers,
   Search,
   UserCheck,
-  Award,
-  Calendar,
-  FileText,
   Mail,
-  Heart,
-  Globe,
   Cpu,
+  Zap,
+  Building2,
+  ShieldCheck,
+  CreditCard,
+  Package,
+  Coins,
+  Lock,
+  UserCog,
   HelpCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CATEGORY_META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  [VariableCategoryGroup.REGISTRATION]: {
-    label: 'Registration',
+  [VariableCategoryGroup.SYSTEM_EVENT]: {
+    label: 'System Events (OTP & Links)',
+    icon: Zap,
+    color: 'text-amber-500',
+  },
+  [VariableCategoryGroup.END_USER]: {
+    label: 'End User',
     icon: UserCheck,
     color: 'text-emerald-500',
   },
-  [VariableCategoryGroup.NOMINATION]: {
-    label: 'Nomination',
-    icon: Award,
-    color: 'text-amber-500',
-  },
-  [VariableCategoryGroup.EVENT]: {
-    label: 'Event',
-    icon: Calendar,
+  [VariableCategoryGroup.ORGANIZATION]: {
+    label: 'Organization',
+    icon: Building2,
     color: 'text-blue-500',
   },
-  [VariableCategoryGroup.BLOG]: {
-    label: 'Blog',
-    icon: FileText,
-    color: 'text-violet-500',
-  },
-  [VariableCategoryGroup.CONTACT]: {
-    label: 'Contact',
+  [VariableCategoryGroup.INVITATION]: {
+    label: 'Invitation',
     icon: Mail,
-    color: 'text-pink-500',
+    color: 'text-indigo-500',
   },
-  [VariableCategoryGroup.SPONSOR]: {
-    label: 'Sponsor',
-    icon: Heart,
+  [VariableCategoryGroup.SUBSCRIPTION_PLAN]: {
+    label: 'Subscription Plan',
+    icon: CreditCard,
+    color: 'text-purple-500',
+  },
+  [VariableCategoryGroup.SUBSCRIPTION]: {
+    label: 'Subscription',
+    icon: Package,
+    color: 'text-sky-500',
+  },
+  [VariableCategoryGroup.CURRENCY]: {
+    label: 'Currency',
+    icon: Coins,
+    color: 'text-yellow-500',
+  },
+  [VariableCategoryGroup.SYSTEM_USER]: {
+    label: 'System Admin',
+    icon: ShieldCheck,
+    color: 'text-purple-500',
+  },
+  [VariableCategoryGroup.AUTH]: {
+    label: 'Auth',
+    icon: Lock,
     color: 'text-rose-500',
   },
-  [VariableCategoryGroup.WEBSITE]: {
-    label: 'Website',
-    icon: Globe,
+  [VariableCategoryGroup.ROLE]: {
+    label: 'Role',
+    icon: UserCog,
     color: 'text-cyan-500',
   },
   [VariableCategoryGroup.SYSTEM]: {
@@ -125,14 +143,17 @@ export const VariableTokenSidebar: React.FC<VariableTokenSidebarProps> = ({
   };
 
   const handleCopyToken = (path: string) => {
-    const token = `{{ ${path} }}`;
+    const token = `{{ params.${path} }}`;
     navigator.clipboard.writeText(token).then(() => {
-      toast.success(`Copied: ${token}`);
+      toast.success(`Copied ${token} to clipboard!`);
     });
   };
 
   const handleInsertToken = (path: string) => {
-    const token = `{{ ${path} }}`;
+    const token = `{{ params.${path} }}`;
+    navigator.clipboard.writeText(token).then(() => {
+      toast.success(`Copied ${token} to clipboard!`);
+    });
     onSelectToken(token);
   };
 

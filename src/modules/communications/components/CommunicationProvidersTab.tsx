@@ -194,9 +194,32 @@ export const CommunicationProvidersTab: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 space-y-4">
-        <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm font-semibold text-gray-500">Loading configured providers...</p>
+      <div className="space-y-6 animate-pulse">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-6 w-48 bg-gray-200 dark:bg-navy-700 rounded-md" />
+            <div className="h-3 w-72 bg-gray-200 dark:bg-navy-700 rounded-md" />
+          </div>
+          <div className="h-9 w-32 bg-gray-200 dark:bg-navy-700 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-6 space-y-4 shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gray-200 dark:bg-navy-700" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-32 bg-gray-200 dark:bg-navy-700 rounded-md" />
+                  <div className="h-3 w-20 bg-gray-200 dark:bg-navy-700 rounded-md" />
+                </div>
+              </div>
+              <div className="h-12 bg-gray-100 dark:bg-navy-800 rounded-xl" />
+              <div className="h-8 w-36 bg-gray-200 dark:bg-navy-700 rounded-xl" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

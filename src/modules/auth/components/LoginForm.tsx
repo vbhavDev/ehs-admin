@@ -1,28 +1,46 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams } from 'next/navigation';
 import { ApiError } from '@/types/api.types';
 import { ConnectionStatus } from '@/components/common/ConnectionStatus';
+import { useFeatureFlag } from '@/modules/feature-flags/hooks/useFeatureFlags';
+import { FEATURE_FLAG_KEYS } from '@/types/feature-flag.types';
 
 interface LoginFormProps {
   onSwitchToSignup: () => void;
   onSwitchToForgot: () => void;
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({
-  onSwitchToSignup,
-  onSwitchToForgot: _onSwitchToForgot,
-}) => {
+export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup, onSwitchToForgot }) => {
   const searchParams = useSearchParams();
   const { login, isLoggingIn } = useAuth();
+  const loginEnabled = useFeatureFlag(FEATURE_FLAG_KEYS.ADMIN_LOGIN);
 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState(searchParams.get('email') || '');
   const [password, setPassword] = useState('');
+  const [saveCredentials, setSaveCredentials] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+
+  React.useEffect(() => {
+    try {
+      const savedData =
+        localStorage.getItem('ehs_admin_saved_credentials') || localStorage.getItem('rememberMe');
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (parsed.email && parsed.password) {
+          setEmail(parsed.email);
+          setPassword(parsed.password);
+          setSaveCredentials(true);
+        }
+      }
+    } catch (e) {
+      // Ignore JSON parse errors
+    }
+  }, []);
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -47,10 +65,22 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     e.preventDefault();
     setErrors({});
 
+    if (!loginEnabled) return;
+
     if (!validate()) return;
 
     try {
       await login({ email, password });
+
+      if (saveCredentials) {
+        const payload = JSON.stringify({ email, password, isChecked: true, saveCredentials: true });
+        localStorage.setItem('ehs_admin_saved_credentials', payload);
+        localStorage.setItem('rememberMe', payload);
+      } else {
+        localStorage.removeItem('ehs_admin_saved_credentials');
+        localStorage.removeItem('rememberMe');
+      }
+
       window.location.replace('/'); // Redirect to dashboard on success
     } catch (error) {
       const apiError = error as ApiError;
@@ -62,6 +92,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {!loginEnabled && (
+        <div className="flex items-start gap-3 rounded-2xl border border-error-200 bg-error-50 p-4 text-sm text-error-600 dark:border-error-500/20 dark:bg-error-500/10 dark:text-error-400">
+          <ShieldAlert size={18} className="mt-0.5 shrink-0" />
+          <p>
+            Admin login is temporarily <strong>disabled</strong> by a platform administrator. Please
+            try again later.
+          </p>
+        </div>
+      )}
+
       {errors.general && (
         <div className="p-4 bg-brand-500/10 border border-brand-500/20 rounded-2xl flex items-center gap-3 text-brand-500 text-sm">
           <AlertCircle size={18} />
@@ -105,13 +145,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           >
             Password
           </label>
-          {/* <button
+          <button
             type="button"
             onClick={onSwitchToForgot}
             className="text-sm font-medium text-brand-500 hover:text-brand-600 transition-colors"
           >
             Forgot?
-          </button> */}
+          </button>
         </div>
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-brand-500 transition-colors">
@@ -141,9 +181,37 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         {errors.password && <p className="text-xs text-brand-500 ml-1">{errors.password}</p>}
       </div>
 
+      <div className="flex items-center justify-between px-1 py-1">
+        <label
+          htmlFor="save-credentials"
+          className="flex items-center gap-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none"
+        >
+          <input
+            id="save-credentials"
+            type="checkbox"
+            checked={saveCredentials}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setSaveCredentials(checked);
+              if (!checked) {
+                localStorage.removeItem('ehs_admin_saved_credentials');
+                localStorage.removeItem('rememberMe');
+              }
+            }}
+            className="w-4.5 h-4.5 rounded border-gray-300 dark:border-navy-600 text-brand-500 focus:ring-brand-500/20 dark:bg-navy-800 transition-colors cursor-pointer accent-brand-500"
+          />
+          <span>Save Credentials</span>
+        </label>
+        {saveCredentials && email && password && (
+          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            ✓ Credentials Saved
+          </span>
+        )}
+      </div>
+
       <button
         type="submit"
-        disabled={isLoggingIn}
+        disabled={isLoggingIn || !loginEnabled}
         className="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand-500/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-lg tracking-wide"
       >
         {isLoggingIn ? (

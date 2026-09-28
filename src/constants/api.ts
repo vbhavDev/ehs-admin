@@ -10,6 +10,8 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: '/admin/auth/forgot-password',
     VERIFY_OTP: '/admin/auth/verify-otp',
     RESET_PASSWORD: '/admin/auth/reset-password',
+    PROFILE: '/admin/auth/profile',
+    CHANGE_PASSWORD: '/admin/auth/change-password',
   },
   USERS: {
     BASE: '/users',
@@ -41,6 +43,16 @@ export const API_ENDPOINTS = {
       BASE: '/admin/end-users',
       BY_ID: (id: string) => `/admin/end-users/${id}`,
     },
+    PLATFORM_SETTINGS: {
+      BASE: '/admin/platform-settings',
+      TRUNCATE_CLIENT_DATA: '/admin/platform-settings/truncate-client-data',
+    },
+    PLUGINS: {
+      BASE: '/admin/plugins',
+      BY_KEY: (key: string) => `/admin/plugins/${key}`,
+      TOGGLE: (key: string) => `/admin/plugins/${key}/toggle`,
+      TEST_CONNECTION: (key: string) => `/admin/plugins/${key}/test-connection`,
+    },
     COMMUNICATIONS: {
       LOGS: '/admin/communications/logs',
       LOG_BY_ID: (id: string) => `/admin/communications/logs/${id}`,
@@ -48,6 +60,9 @@ export const API_ENDPOINTS = {
       WEBHOOKS: '/admin/communications/webhooks',
       WEBHOOK_BY_ID: (id: string) => `/admin/communications/webhooks/${id}`,
     },
+  },
+  PUBLIC: {
+    BRANDING: '/public/branding',
   },
   SYSTEM: {
     TEST_CONNECTION: '/test-connection',

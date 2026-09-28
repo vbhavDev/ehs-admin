@@ -49,4 +49,11 @@ export const subscriptionPlansService = {
       method: 'DELETE',
     });
   },
+
+  reorderPlans: async (items: { id: string; order: number }[]): Promise<void> => {
+    await apiFetch('/admin/subscription-plans/reorder', {
+      method: 'POST',
+      body: JSON.stringify({ items }),
+    });
+  },
 };

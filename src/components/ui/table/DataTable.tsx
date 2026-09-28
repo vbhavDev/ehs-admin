@@ -182,11 +182,23 @@ export function DataTable<T extends object>({
           </TableHeader>
           <TableBody className="divide-y divide-gray-100 dark:divide-navy-700">
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="px-7.5 py-16 text-center">
-                  <div className="inline-block w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
-                </TableCell>
-              </TableRow>
+              Array.from({ length: pageSize > 5 ? 5 : pageSize }).map((_, rIdx) => (
+                <TableRow key={rIdx} className="animate-pulse">
+                  {columns.map((_, cIdx) => (
+                    <TableCell key={cIdx} className="px-7.5 py-4 align-middle">
+                      <div
+                        className={`h-4 bg-gray-200 dark:bg-navy-700 rounded-md ${
+                          cIdx === 0
+                            ? 'w-1/3'
+                            : cIdx === columns.length - 1
+                              ? 'w-16 ml-auto'
+                              : 'w-3/4'
+                        }`}
+                      />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : paginatedData.length === 0 ? (
               <TableRow>
                 <TableCell

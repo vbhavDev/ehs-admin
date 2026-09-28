@@ -6,6 +6,8 @@ interface TagInputProps {
   id?: string;
   placeholder?: string;
   defaultValue?: string[];
+  /** Controlled value. When provided, the component is controlled and `onChange` fires with the next tags. */
+  value?: string[];
   onChange?: (tags: string[]) => void;
   error?: boolean;
   hint?: string;
@@ -18,6 +20,7 @@ const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
       id,
       placeholder = 'Add keywords...',
       defaultValue = [],
+      value,
       onChange,
       error,
       hint,
@@ -25,33 +28,37 @@ const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
     },
     ref,
   ) => {
-    const [tags, setTags] = useState<string[]>(defaultValue);
+    const isControlled = value !== undefined;
+    const [internalTags, setInternalTags] = useState<string[]>(defaultValue);
     const [inputValue, setInputValue] = useState('');
 
+    const tags = isControlled ? (value as string[]) : internalTags;
+
     useEffect(() => {
-      if (defaultValue.length > 0 && tags.length === 0) {
-        setTags(defaultValue);
+      if (!isControlled && defaultValue.length > 0 && internalTags.length === 0) {
+        setInternalTags(defaultValue);
       }
-    }, [defaultValue]);
+    }, [defaultValue, isControlled]);
+
+    const commit = (newTags: string[]) => {
+      if (!isControlled) {
+        setInternalTags(newTags);
+      }
+      if (onChange) {
+        onChange(newTags);
+      }
+    };
 
     const addTag = () => {
       const trimmedValue = inputValue.trim();
       if (trimmedValue && !tags.includes(trimmedValue)) {
-        const newTags = [...tags, trimmedValue];
-        setTags(newTags);
+        commit([...tags, trimmedValue]);
         setInputValue('');
-        if (onChange) {
-          onChange(newTags);
-        }
       }
     };
 
     const removeTag = (tagToRemove: string) => {
-      const newTags = tags.filter((tag) => tag !== tagToRemove);
-      setTags(newTags);
-      if (onChange) {
-        onChange(newTags);
-      }
+      commit(tags.filter((tag) => tag !== tagToRemove));
     };
 
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {

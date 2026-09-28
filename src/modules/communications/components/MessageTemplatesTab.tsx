@@ -18,6 +18,7 @@ import {
   Send,
   CloudDownload,
   FileCode,
+  Eye,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -62,8 +63,14 @@ export const MessageTemplatesTab: React.FC<MessageTemplatesTabProps> = ({ channe
   const [externalIdInput, setExternalIdInput] = useState('');
   const [isPulling, setIsPulling] = useState(false);
 
+  const handleView = (template: MessageTemplate) => {
+    const targetId = template.id || template._id || template.slug;
+    router.push(`/communications/templates/${targetId}/view`);
+  };
+
   const handleEdit = (template: MessageTemplate) => {
-    router.push(`/communications/templates/${template.id}/edit`);
+    const targetId = template.id || template._id || template.slug;
+    router.push(`/communications/templates/${targetId}/edit`);
   };
 
   const handleCreate = () => {
@@ -76,9 +83,10 @@ export const MessageTemplatesTab: React.FC<MessageTemplatesTabProps> = ({ channe
   };
 
   const handleSyncToProvider = async (template: MessageTemplate) => {
+    const targetId = template.id || template._id || template.slug;
     const loader = toast.loading(`Pushing template "${template.name}" to Brevo...`);
     try {
-      await syncToProvider(template.id);
+      await syncToProvider(targetId);
     } catch {
       // Toast handles error message
     } finally {
@@ -257,6 +265,15 @@ export const MessageTemplatesTab: React.FC<MessageTemplatesTabProps> = ({ channe
       header: 'Actions',
       accessor: (tpl) => (
         <div className="flex items-center gap-1.5">
+          {/* View Template Preview & Test Variables */}
+          <button
+            onClick={() => handleView(tpl)}
+            className="p-1.5 text-gray-400 hover:text-brand-500 dark:hover:text-brand-400 bg-gray-50 dark:bg-navy-950 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg transition-all"
+            title="View Preview & Test Variables"
+          >
+            <Eye size={13} />
+          </button>
+
           {/* Edit Template */}
           <button
             onClick={() => handleEdit(tpl)}

@@ -80,9 +80,13 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                 onChange={handleModuleChange}
                 options={[
                   { value: 'all', label: 'All Modules' },
-                  { value: 'blogs', label: 'Blogs' },
                   { value: 'media', label: 'Media' },
+                  { value: 'organizations', label: 'Organizations' },
+                  { value: 'communications', label: 'Communications' },
                   { value: 'websites', label: 'Websites' },
+                  { value: 'plugins', label: 'Plugins' },
+                  { value: 'profile', label: 'Profile' },
+                  { value: 'branding', label: 'Branding' },
                 ]}
                 className="w-full"
               />

@@ -1,10 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import { Settings, Shield, Server, Bell, Key } from 'lucide-react';
+import { Settings, Shield, Server, Bell, Key, Database, AlertTriangle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { platformSettingsService } from '@/services/platform-settings.service';
+import { Modal } from '@/components/ui/modal';
+import Button from '@/components/ui/button/Button';
 
 export default function SystemSettingsPage() {
+  const [isTruncateModalOpen, setIsTruncateModalOpen] = useState(false);
+  const [isTruncating, setIsTruncating] = useState(false);
+
+  const handleTruncateData = async () => {
+    try {
+      setIsTruncating(true);
+      const res = await platformSettingsService.truncateClientData();
+      if (res.success) {
+        toast.success(`Successfully truncated ${res.deletedCount} documents.`);
+        setIsTruncateModalOpen(false);
+      } else {
+        toast.error('Failed to truncate data.');
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'An error occurred while truncating data.');
+    } finally {
+      setIsTruncating(false);
+    }
+  };
+
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <PageBreadcrumb pageTitle="Settings" />
@@ -72,7 +96,52 @@ export default function SystemSettingsPage() {
             Generate and manage external API access tokens and webhooks
           </p>
         </div>
+
+        <div
+          className="bg-white dark:bg-navy-800 rounded-2xl border border-gray-200 dark:border-navy-700 p-6 shadow-xs hover:border-red-500/50 transition-colors cursor-pointer group"
+          onClick={() => setIsTruncateModalOpen(true)}
+        >
+          <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <Database size={24} />
+          </div>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Data Management</h3>
+          <p className="text-xs text-gray-500 dark:text-navy-300">
+            Danger zone: truncate client data collections completely
+          </p>
+        </div>
       </div>
+
+      <Modal
+        isOpen={isTruncateModalOpen}
+        onClose={() => setIsTruncateModalOpen(false)}
+        title="Truncate Client Data"
+        size="md"
+      >
+        <div className="p-4 flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-500 rounded-full flex items-center justify-center mb-4">
+            <AlertTriangle size={32} />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+            Are you absolutely sure?
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-navy-300 mb-6">
+            This will permanently delete all data from client collections including users,
+            organizations, invitations, plants, and hazards. This action cannot be undone.
+          </p>
+          <div className="flex w-full gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setIsTruncateModalOpen(false)}
+              disabled={isTruncating}
+            >
+              Cancel
+            </Button>
+            <Button variant="error" onClick={handleTruncateData} isLoading={isTruncating}>
+              Confirm Truncate
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -49,6 +49,18 @@ export const useSubscriptionPlans = (params: SubscriptionPlanQueryParams = {}) =
     },
   });
 
+  const reorderPlansMutation = useMutation({
+    mutationFn: (items: { id: string; order: number }[]) =>
+      subscriptionPlansService.reorderPlans(items),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscription-plans'] });
+      toast.success('Plan order updated');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to reorder plans');
+    },
+  });
+
   return {
     plans: plansQuery.data?.data || [],
     meta: plansQuery.data?.meta,
@@ -58,9 +70,11 @@ export const useSubscriptionPlans = (params: SubscriptionPlanQueryParams = {}) =
     createPlan: createPlanMutation.mutateAsync,
     updatePlan: updatePlanMutation.mutateAsync,
     deletePlan: deletePlanMutation.mutateAsync,
+    reorderPlans: reorderPlansMutation.mutateAsync,
     isCreating: createPlanMutation.isPending,
     isUpdating: updatePlanMutation.isPending,
     isDeleting: deletePlanMutation.isPending,
+    isReordering: reorderPlansMutation.isPending,
   };
 };
 

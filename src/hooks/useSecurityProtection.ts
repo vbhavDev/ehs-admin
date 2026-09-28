@@ -1,38 +1,75 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { useFeatureFlag } from '@/modules/feature-flags/hooks/useFeatureFlags';
+import { FEATURE_FLAG_KEYS } from '@/types/feature-flag.types';
 
 interface SecurityState {
   isDevToolsOpen: boolean;
   isBlurred: boolean;
   screenshotWarning: boolean;
+  clearBlur: () => void;
 }
 
+/**
+ * Content-protection hook. The whole layer is gated by the
+ * `admin_content_protection` kill-switch — when an admin disables it from the
+ * Feature Toggles page, none of the listeners (right-click block, blur,
+ * screenshot warning, DevTools trap) are attached.
+ */
 export function useSecurityProtection(): SecurityState {
+  const protectionEnabled = useFeatureFlag(FEATURE_FLAG_KEYS.ADMIN_CONTENT_PROTECTION);
+  const pathname = usePathname();
   const [isDevToolsOpen, setIsDevToolsOpen] = useState<boolean>(false);
   const [isBlurred, setIsBlurred] = useState<boolean>(false);
   const [screenshotWarning, setScreenshotWarning] = useState<boolean>(false);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Helper to clear system clipboard
-  const clearClipboard = useCallback(() => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard
-        .writeText(
-          'Security Policy: Screenshot and clipboard exports are restricted on Admin Panel.',
-        )
-        .catch(() => {
-          // Ignore permission denial silently
-        });
+  // 1. Identify protected routes (data tables, view detail pages, update form pages)
+  const isProtectedPage = useMemo(() => {
+    if (!pathname) return false;
+
+    // Root dashboard page '/' is an overview page, NOT a data table/view/update page
+    if (pathname === '/') return false;
+
+    // Exclude creation, addition, edit, and update pages for copy-paste usability
+    if (
+      pathname.includes('/create') ||
+      pathname.includes('/add') ||
+      pathname.includes('/new') ||
+      pathname.includes('/edit') ||
+      pathname.includes('/update')
+    ) {
+      return false;
     }
+
+    // All module routes containing sensitive data tables and detail views
+    const protectedRoutes = [
+      '/organizations',
+      '/end-users',
+      '/users',
+      '/roles-permission',
+      '/system-user',
+    ];
+
+    return protectedRoutes.some((route) => pathname.startsWith(route));
+  }, [pathname]);
+
+  const clearBlur = useCallback(() => {
+    setIsBlurred(false);
+  }, []);
+
+  // Helper for clipboard operations (no-op to prevent overwriting user clipboard data)
+  const clearClipboard = useCallback(() => {
+    // Intentionally no-op to allow system copy-paste across inputs and forms
   }, []);
 
   // Trigger screenshot warning banner & obscure screen
   const triggerScreenshotWarning = useCallback(() => {
     setScreenshotWarning(true);
     setIsBlurred(true);
-    clearClipboard();
 
     toast.error('Screenshots and screen captures are strictly blocked for security.', {
       id: 'screenshot-blocked-toast',
@@ -46,13 +83,27 @@ export function useSecurityProtection(): SecurityState {
       setScreenshotWarning(false);
       setIsBlurred(false);
     }, 3500);
-  }, [clearClipboard]);
+  }, []);
 
-  // 1. Right-click context menu prevention (Always active)
+  // 2. Right-click context menu prevention (allows context menu on inputs/textareas/editors)
   useEffect(() => {
+    if (!protectionEnabled || !isProtectedPage) return;
+
     const handleContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable ||
+          target.closest('input') ||
+          target.closest('textarea') ||
+          target.closest('.monaco-editor'))
+      ) {
+        return; // Allow native context menu on input controls for copy/paste
+      }
+
       e.preventDefault();
-      clearClipboard();
       toast.error('Right-click context menu is disabled for security reasons.', {
         id: 'context-menu-disabled-toast',
         duration: 3000,
@@ -63,10 +114,12 @@ export function useSecurityProtection(): SecurityState {
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu, true);
     };
-  }, [clearClipboard]);
+  }, [isProtectedPage, protectionEnabled]);
 
-  // 2. Keyboard shortcut prevention (PrintScreen, Snipping tool, Save, Print, DevTools)
+  // 3. Keyboard shortcut prevention (PrintScreen, Snipping tool, Save, Print, DevTools)
   useEffect(() => {
+    if (!protectionEnabled) return;
+
     const isPrintScreenKey = (e: KeyboardEvent) => {
       const key = e.key ? e.key.toLowerCase() : '';
       const code = e.code ? e.code.toLowerCase() : '';
@@ -177,10 +230,34 @@ export function useSecurityProtection(): SecurityState {
       window.removeEventListener('keydown', handleKeyDown, true);
       window.removeEventListener('keyup', handleKeyUp, true);
     };
-  }, [triggerScreenshotWarning, clearClipboard]);
+  }, [triggerScreenshotWarning, clearClipboard, protectionEnabled]);
 
-  // 3. Window blur / focus / visibility change detection (Blackout UI when focus lost to snip/screenshot tool)
+  // 4. Mouse cursor event tracking & focus detection (Active ONLY on data tables, view pages, update pages)
   useEffect(() => {
+    if (!protectionEnabled || !isProtectedPage) {
+      setIsBlurred(false);
+      return;
+    }
+
+    // Mouse leaves window boundary -> show content protection layer
+    const handleMouseLeave = (e: MouseEvent) => {
+      if (
+        e.clientY <= 0 ||
+        e.clientX <= 0 ||
+        e.clientX >= window.innerWidth ||
+        e.clientY >= window.innerHeight ||
+        !e.relatedTarget
+      ) {
+        setIsBlurred(true);
+        clearClipboard();
+      }
+    };
+
+    // Mouse enters or moves inside current window -> automatically hide content protection layer
+    const handleMouseEnterOrMove = () => {
+      setIsBlurred(false);
+    };
+
     const handleBlur = () => {
       setIsBlurred(true);
       clearClipboard();
@@ -199,29 +276,39 @@ export function useSecurityProtection(): SecurityState {
       }
     };
 
+    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('mouseenter', handleMouseEnterOrMove);
+    window.addEventListener('mousemove', handleMouseEnterOrMove);
     window.addEventListener('blur', handleBlur, true);
     window.addEventListener('focus', handleFocus, true);
     document.addEventListener('visibilitychange', handleVisibilityChange, true);
 
     return () => {
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('mouseenter', handleMouseEnterOrMove);
+      window.removeEventListener('mousemove', handleMouseEnterOrMove);
       window.removeEventListener('blur', handleBlur, true);
       window.removeEventListener('focus', handleFocus, true);
       document.removeEventListener('visibilitychange', handleVisibilityChange, true);
     };
-  }, [clearClipboard]);
+  }, [isProtectedPage, clearClipboard, protectionEnabled]);
 
-  // 4. DevTools detection logic
+  // 5. DevTools detection logic
   useEffect(() => {
+    if (!protectionEnabled) {
+      // Protection off — ensure no stale detection modal lingers.
+      setIsDevToolsOpen(false);
+      return;
+    }
+
     const threshold = 160;
 
     const checkDevTools = () => {
-      // Test 1: Window Dimension Delta Check (handles docked DevTools)
       const widthThreshold = window.outerWidth - window.innerWidth > threshold;
       const heightThreshold = window.outerHeight - window.innerHeight > threshold;
 
       let detected = widthThreshold || heightThreshold;
 
-      // Test 2: Timing / Debugger check
       if (!detected) {
         const start = performance.now();
         const fn = new Function('debugger');
@@ -242,11 +329,11 @@ export function useSecurityProtection(): SecurityState {
       clearInterval(intervalId);
       window.removeEventListener('resize', checkDevTools);
     };
-  }, []);
+  }, [protectionEnabled]);
 
-  // 5. Continuous Debugger Trap loop when DevTools is open
+  // 6. Continuous Debugger Trap loop when DevTools is open
   useEffect(() => {
-    if (!isDevToolsOpen) return;
+    if (!protectionEnabled || !isDevToolsOpen) return;
 
     const trapInterval = setInterval(() => {
       try {
@@ -260,11 +347,12 @@ export function useSecurityProtection(): SecurityState {
     return () => {
       clearInterval(trapInterval);
     };
-  }, [isDevToolsOpen]);
+  }, [isDevToolsOpen, protectionEnabled]);
 
   return {
     isDevToolsOpen,
     isBlurred,
     screenshotWarning,
+    clearBlur,
   };
 }

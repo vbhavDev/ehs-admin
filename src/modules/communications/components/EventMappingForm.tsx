@@ -18,6 +18,7 @@ import { useCommunicationProviders } from '../hooks/useCommunicationProviders';
 import { communicationService } from '@/services/communication.service';
 import { Zap, ArrowLeft, Info, Eye, X, Plus, Trash2, AlertCircle, HelpCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { VariableTokenSidebar } from './VariableTokenSidebar';
 
 // ── System Event Search Combobox ──
 interface SystemEventComboboxProps {
@@ -76,17 +77,16 @@ const SystemEventCombobox: React.FC<SystemEventComboboxProps> = ({
 
   const categoryLabels: Record<string, string> = {
     auth: 'Authentication',
+    end_user: 'End Users',
+    organization: 'Organizations',
+    invitation: 'Invitations',
+    subscription: 'Subscriptions',
+    subscription_plan: 'Subscription Plans',
+    currency: 'Currencies',
     system_user: 'System Users',
-    attendee: 'Attendees',
-    event: 'Event Management',
-    blog: 'Blogs',
-    contact: 'Contacts',
-    sponsor: 'Sponsors',
-    nomination: 'Nominations',
-    website: 'Websites',
-    report: 'Reports',
     communication: 'Communications',
     file: 'Files',
+    system: 'System Events',
   };
 
   return (
@@ -470,8 +470,33 @@ export const EventMappingForm: React.FC<EventMappingFormProps> = ({ mappingId })
 
   if (isEdit && isLoadingMapping) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
+      <div className="space-y-6 animate-pulse">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-7 w-48 bg-gray-200 dark:bg-navy-700 rounded-md" />
+            <div className="h-3 w-72 bg-gray-200 dark:bg-navy-700 rounded-md" />
+          </div>
+          <div className="flex gap-3">
+            <div className="h-9 w-24 bg-gray-200 dark:bg-navy-700 rounded-xl" />
+            <div className="h-9 w-32 bg-gray-200 dark:bg-navy-700 rounded-xl" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white dark:bg-navy-900 rounded-3xl p-6 border border-gray-100 dark:border-navy-800 space-y-4">
+              <div className="h-4 w-32 bg-gray-200 dark:bg-navy-700 rounded-md" />
+              <div className="h-10 w-full bg-gray-100 dark:bg-navy-800 rounded-2xl" />
+            </div>
+            <div className="bg-white dark:bg-navy-900 rounded-3xl p-6 border border-gray-100 dark:border-navy-800 space-y-4">
+              <div className="h-4 w-40 bg-gray-200 dark:bg-navy-700 rounded-md" />
+              <div className="h-20 w-full bg-gray-100 dark:bg-navy-800 rounded-2xl" />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-navy-900 rounded-3xl p-6 border border-gray-100 dark:border-navy-800 space-y-4 h-fit">
+            <div className="h-4 w-28 bg-gray-200 dark:bg-navy-700 rounded-md" />
+            <div className="h-10 w-full bg-gray-100 dark:bg-navy-800 rounded-2xl" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -946,6 +971,18 @@ export const EventMappingForm: React.FC<EventMappingFormProps> = ({ mappingId })
                 <li>Separate templates will be prepared and delivered concurrently.</li>
               </ul>
             </div>
+          </div>
+
+          {/* Token Explorer Sidebar */}
+          <div className="h-[480px]">
+            <VariableTokenSidebar
+              onSelectToken={(token) => {
+                navigator.clipboard.writeText(token).then(() => {
+                  toast.success(`Copied ${token} to clipboard!`);
+                });
+              }}
+              modelName="SystemEvent"
+            />
           </div>
         </div>
       </div>

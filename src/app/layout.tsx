@@ -3,11 +3,15 @@ import { Roboto, Open_Sans } from 'next/font/google';
 import './globals.css';
 import 'flatpickr/dist/flatpickr.css';
 import QueryProvider from '@/providers/QueryProvider';
+import { BrandThemeProvider } from '@/providers/BrandThemeProvider';
+import { FeatureFlagsProvider } from '@/providers/FeatureFlagsProvider';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ToasterProvider } from '@/components/providers/ToasterProvider';
 import { ModalProvider } from '@/context/ModalContext';
 import { GlobalModal } from '@/components/ui/modal/GlobalModal';
+import { ADMIN_THEME_BOOT_SCRIPT } from '@/lib/theme-boot';
+import { DOM_TRANSLATE_PATCH_SCRIPT } from '@/lib/dom-translate-patch';
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -36,16 +40,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${roboto.variable} ${openSans.variable}`}>
+    <html lang="en" className={`${roboto.variable} ${openSans.variable}`} suppressHydrationWarning>
+      <head>
+        {/* DOM Translate Patch — prevents React removeChild / insertBefore crashes from Google Translate / browser extensions */}
+        <script dangerouslySetInnerHTML={{ __html: DOM_TRANSLATE_PATCH_SCRIPT }} />
+        {/* Pre-paint brand restore — applies the cached colors from the
+            previous session (works on the logged-out login page too), so
+            there is no default-red flash while the settings fetch runs. */}
+        <script dangerouslySetInnerHTML={{ __html: ADMIN_THEME_BOOT_SCRIPT }} />
+      </head>
       <body className={`${openSans.className} dark:bg-gray-900`}>
         <ToasterProvider />
         <QueryProvider>
-          <ThemeProvider>
-            <ModalProvider>
-              <SidebarProvider>{children}</SidebarProvider>
-              <GlobalModal />
-            </ModalProvider>
-          </ThemeProvider>
+          <FeatureFlagsProvider>
+            <BrandThemeProvider>
+              <ThemeProvider>
+                <ModalProvider>
+                  <SidebarProvider>{children}</SidebarProvider>
+                  <GlobalModal />
+                </ModalProvider>
+              </ThemeProvider>
+            </BrandThemeProvider>
+          </FeatureFlagsProvider>
         </QueryProvider>
       </body>
     </html>

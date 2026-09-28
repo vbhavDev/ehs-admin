@@ -1,1 +1,12 @@
+#!/bin/sh
+set -e
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Running pre-commit checks (lint & format)..."
 npx lint-staged
+
+echo "Running type check..."
+yarn type-check
+
+echo "Running build check..."
+yarn build

@@ -96,6 +96,12 @@ export const PERMISSIONS = {
   NOMINEES_CREATE: 'nominees.create',
   NOMINEES_UPDATE: 'nominees.update',
   NOMINEES_DELETE: 'nominees.delete',
+
+  // Languages & Localization
+  LANGUAGES_VIEW: 'languages.view',
+  LANGUAGES_CREATE: 'languages.create',
+  LANGUAGES_UPDATE: 'languages.update',
+  LANGUAGES_DELETE: 'languages.delete',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -175,4 +181,21 @@ export const PERMISSION_GROUPS = {
     PERMISSIONS.SUPPORT_TICKET_VIEW,
     PERMISSIONS.SUPPORT_TICKET_UPDATE,
   ],
+};
+
+export const CLIENT_PERMISSIONS = {
+  // Inspections
+  INSPECTIONS_VIEW: 'client.inspections.view',
+  INSPECTIONS_MANAGE: 'client.inspections.manage',
+
+  // Plants / Facilities
+  PLANTS_VIEW: 'client.plants.view',
+  PLANTS_MANAGE: 'client.plants.manage',
+} as const;
+
+export type ClientPermission = (typeof CLIENT_PERMISSIONS)[keyof typeof CLIENT_PERMISSIONS];
+
+export const CLIENT_PERMISSION_GROUPS = {
+  Inspections: [CLIENT_PERMISSIONS.INSPECTIONS_VIEW, CLIENT_PERMISSIONS.INSPECTIONS_MANAGE],
+  'Plants & Facilities': [CLIENT_PERMISSIONS.PLANTS_VIEW, CLIENT_PERMISSIONS.PLANTS_MANAGE],
 };

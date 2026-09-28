@@ -17,6 +17,13 @@ function buildQueryString(params: OrganizationQueryParams): string {
   return query.toString();
 }
 
+export interface InviteMemberData {
+  email: string;
+  role: string;
+  fullName?: string;
+  phone?: string;
+}
+
 export const organizationsService = {
   getOrganizations: async (
     params: OrganizationQueryParams = {},
@@ -47,6 +54,23 @@ export const organizationsService = {
   deleteOrganization: async (id: string): Promise<void> => {
     await apiFetch(`/admin/organizations/${id}`, {
       method: 'DELETE',
+    });
+  },
+
+  inviteMember: async (orgId: string, data: InviteMemberData): Promise<unknown> => {
+    return apiFetch(`/admin/organizations/${orgId}/invitations`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  getInvitations: async (orgId: string): Promise<unknown> => {
+    return apiFetch(`/admin/organizations/${orgId}/invitations`);
+  },
+
+  revokeInvitation: async (orgId: string, invitationId: string): Promise<unknown> => {
+    return apiFetch(`/admin/organizations/${orgId}/invitations/${invitationId}/revoke`, {
+      method: 'PATCH',
     });
   },
 };

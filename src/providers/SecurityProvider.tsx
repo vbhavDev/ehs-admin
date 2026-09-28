@@ -11,13 +11,17 @@ interface SecurityProviderProps {
 }
 
 export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) => {
-  const { isDevToolsOpen, isBlurred, screenshotWarning } = useSecurityProtection();
+  const { isDevToolsOpen, isBlurred, screenshotWarning, clearBlur } = useSecurityProtection();
 
   return (
     <div className="protected-content flex-1">
       <SecurityWatermark />
       <DevToolsBlockedModal isOpen={isDevToolsOpen} />
-      <ScreenshotWarningOverlay isBlurred={isBlurred} screenshotWarning={screenshotWarning} />
+      <ScreenshotWarningOverlay
+        isBlurred={isBlurred}
+        screenshotWarning={screenshotWarning}
+        onMouseEnter={clearBlur}
+      />
       {children}
     </div>
   );

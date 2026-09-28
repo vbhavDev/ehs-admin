@@ -1,9 +1,12 @@
+import { ImageLinks } from '@/modules/websites/types/website.types';
+
 export interface Role {
   id: string;
   name: string;
   roleKey: string;
   isActive: boolean;
   isShow: boolean;
+  scope?: 'SYSTEM' | 'CLIENT';
   permissions: string[];
 }
 
@@ -11,10 +14,18 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: Role;
+  role?: Role;
+  roles?: Role[];
   isActive: boolean;
   acceptTerms: boolean;
-  profileImage?: string;
+  /**
+   * Avatar links — ResponseInterceptor maps the populated `profileImageId`
+   * File to `{ original, ...urlVariants }` (or a legacy string URL).
+   */
+  profileImage?: string | ImageLinks | null;
+  /** File Upload Law compliant avatar reference (populated File or its ID) */
+  profileImageId?: string | { id: string; url?: string } | null;
+  lastLogin?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -23,7 +34,8 @@ export interface AuthUser {
   id: string;
   email: string;
   fullName: string;
-  role: Role;
+  role?: Role;
+  roles?: Role[];
   profileImage?: string;
 }
 

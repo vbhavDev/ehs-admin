@@ -93,6 +93,9 @@ export function useSidebarMenus() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['menus'] });
+      queryClient.invalidateQueries({ queryKey: ['menus', 'all'] });
+      queryClient.invalidateQueries({ queryKey: ['menus', 'dropdown'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-sidebarMenus'] });
     },
   });
 
@@ -121,4 +124,12 @@ export function useSidebarMenus() {
       deleteMutation.isPending ||
       reorderMutation.isPending,
   };
+}
+
+export function useSidebarMenu(id: string | null) {
+  return useQuery({
+    queryKey: ['menus', id],
+    queryFn: () => (id ? sidebarMenuService.getSidebarMenuById(id) : null),
+    enabled: !!id,
+  });
 }

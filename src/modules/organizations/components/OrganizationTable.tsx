@@ -1,9 +1,11 @@
 'use client';
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { DataTable, Column } from '@/components/ui/table/DataTable';
 import { Organization, ORGANIZATION_STATUS_LABELS } from '@/types/organization.types';
 import { useOrganizations } from '../hooks/useOrganizations';
-import { Edit, Trash2, Building2 } from 'lucide-react';
+import { Edit, Trash2, Building2, Eye } from 'lucide-react';
+import { getImageUrl } from '@/lib/utils';
 
 interface OrganizationTableProps {
   onEdit: (org: Organization) => void;
@@ -16,6 +18,19 @@ const STATUS_COLORS: Record<string, string> = {
   pending_setup: 'bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400',
   expired: 'bg-gray-100 text-gray-600 dark:bg-navy-700 dark:text-gray-300',
   canceled: 'bg-gray-100 text-gray-500 dark:bg-navy-700 dark:text-gray-400',
+};
+
+const getOrgLogoUrl = (org: Organization): string => {
+  if (!org.logoFileId) return '';
+  const logoObj =
+    typeof org.logoFileId === 'object' && org.logoFileId !== null
+      ? (org.logoFileId as { url?: string; id?: string })
+      : null;
+  if (logoObj?.url) {
+    return logoObj.url;
+  }
+  const fileId = typeof org.logoFileId === 'string' ? org.logoFileId : logoObj?.id;
+  return getImageUrl(fileId);
 };
 
 export const OrganizationTable: React.FC<OrganizationTableProps> = ({ onEdit, onDelete }) => {
@@ -37,17 +52,35 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({ onEdit, on
   const columns: Column<Organization>[] = [
     {
       header: 'Organization',
-      accessor: (org) => (
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-500 dark:bg-brand-500/15 dark:text-brand-400">
-            <Building2 size={20} />
+      accessor: (org) => {
+        const logoUrl = getOrgLogoUrl(org);
+        return (
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200/80 dark:border-navy-700 bg-white dark:bg-navy-800 overflow-hidden shrink-0 shadow-sm">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={org.companyName}
+                  className="h-full w-full object-contain p-1"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-brand-50 dark:bg-brand-500/15 text-brand-500 dark:text-brand-400">
+                  <Building2 size={20} />
+                </div>
+              )}
+            </div>
+            <div>
+              <Link
+                href={`/organizations/${org.id}`}
+                className="text-sm font-bold text-gray-900 dark:text-white hover:text-brand-500 dark:hover:text-brand-400 transition-colors"
+              >
+                {org.companyName}
+              </Link>
+              <p className="text-xs text-gray-500">/{org.slug}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900 dark:text-white">{org.companyName}</p>
-            <p className="text-xs text-gray-500">/{org.slug}</p>
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       header: 'Plan',
@@ -105,16 +138,25 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({ onEdit, on
     {
       header: 'Actions',
       accessor: (org) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <Link
+            href={`/organizations/${org.id}`}
+            className="p-1.5 text-gray-500 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg transition-colors"
+            title="View Dashboard"
+          >
+            <Eye size={18} />
+          </Link>
           <button
             onClick={() => onEdit(org)}
-            className="p-1.5 text-gray-500 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition-colors"
+            className="p-1.5 text-gray-500 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg transition-colors"
+            title="Edit Organization"
           >
             <Edit size={18} />
           </button>
           <button
             onClick={() => onDelete(org)}
-            className="p-1.5 text-gray-500 hover:text-error-500 hover:bg-error-50 rounded-lg transition-colors"
+            className="p-1.5 text-gray-500 hover:text-error-500 hover:bg-error-50 dark:hover:bg-error-500/10 rounded-lg transition-colors"
+            title="Delete Organization"
           >
             <Trash2 size={18} />
           </button>

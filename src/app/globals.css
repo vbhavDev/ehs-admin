@@ -7,6 +7,48 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Runtime brand tokens — driven by platform_settings (DevOps → Platform
+ * Settings → UI Colors) via BrandThemeProvider. The :root values below are
+ * the fallback defaults (current brand) — used until settings load and
+ * whenever the API is unreachable. Components must keep using the brand and
+ * orange (accent) utility classes; never hardcode hex values.
+ */
+:root {
+  --app-primary: #e31e24;
+  --app-accent: #fb6514;
+}
+
+@theme inline {
+  /* Brand scale — runtime-derived from platform primaryColor */
+  --color-brand-25: color-mix(in srgb, var(--app-primary) 4%, #ffffff);
+  --color-brand-50: color-mix(in srgb, var(--app-primary) 9%, #ffffff);
+  --color-brand-100: color-mix(in srgb, var(--app-primary) 18%, #ffffff);
+  --color-brand-200: color-mix(in srgb, var(--app-primary) 36%, #ffffff);
+  --color-brand-300: color-mix(in srgb, var(--app-primary) 56%, #ffffff);
+  --color-brand-400: color-mix(in srgb, var(--app-primary) 78%, #ffffff);
+  --color-brand-500: var(--app-primary);
+  --color-brand-600: color-mix(in srgb, var(--app-primary) 88%, #000000);
+  --color-brand-700: color-mix(in srgb, var(--app-primary) 72%, #000000);
+  --color-brand-800: color-mix(in srgb, var(--app-primary) 56%, #000000);
+  --color-brand-900: color-mix(in srgb, var(--app-primary) 42%, #000000);
+  --color-brand-950: color-mix(in srgb, var(--app-primary) 28%, #000000);
+
+  /* Accent scale — runtime-derived from platform accentColor */
+  --color-orange-25: color-mix(in srgb, var(--app-accent) 4%, #ffffff);
+  --color-orange-50: color-mix(in srgb, var(--app-accent) 9%, #ffffff);
+  --color-orange-100: color-mix(in srgb, var(--app-accent) 18%, #ffffff);
+  --color-orange-200: color-mix(in srgb, var(--app-accent) 36%, #ffffff);
+  --color-orange-300: color-mix(in srgb, var(--app-accent) 56%, #ffffff);
+  --color-orange-400: color-mix(in srgb, var(--app-accent) 78%, #ffffff);
+  --color-orange-500: var(--app-accent);
+  --color-orange-600: color-mix(in srgb, var(--app-accent) 88%, #000000);
+  --color-orange-700: color-mix(in srgb, var(--app-accent) 72%, #000000);
+  --color-orange-800: color-mix(in srgb, var(--app-accent) 56%, #000000);
+  --color-orange-900: color-mix(in srgb, var(--app-accent) 42%, #000000);
+  --color-orange-950: color-mix(in srgb, var(--app-accent) 28%, #000000);
+}
+
 @theme {
   --font-*: initial;
   --font-roboto: var(--font-roboto), sans-serif;
@@ -44,19 +86,7 @@
   --color-white: #ffffff;
   --color-black: #0a192f;
 
-  --color-brand-25: #fff5f5;
-  --color-brand-50: #fee2e2;
-  --color-brand-100: #fecaca;
-  --color-brand-200: #fca5a5;
-  --color-brand-300: #f87171;
-  --color-brand-400: #ef4444;
-  --color-brand-500: #e31e24;
-  /* Brand Primary Red */
-  --color-brand-600: #c1161c;
-  --color-brand-700: #991b1b;
-  --color-brand-800: #7f1d1d;
-  --color-brand-900: #6b1313;
-  --color-brand-950: #450a0a;
+  /* Brand scale moved to @theme inline above (runtime-driven) */
 
   --color-navy-25: #f8fafc;
   --color-navy-50: #f1f5f9;
@@ -87,18 +117,7 @@
   --color-gray-950: #050a14;
   --color-gray-dark: #0a192f;
 
-  --color-orange-25: #fffaf5;
-  --color-orange-50: #fff6ed;
-  --color-orange-100: #ffead5;
-  --color-orange-200: #fddcab;
-  --color-orange-300: #feb273;
-  --color-orange-400: #fd853a;
-  --color-orange-500: #fb6514;
-  --color-orange-600: #ec4a0a;
-  --color-orange-700: #c4320a;
-  --color-orange-800: #9c2a10;
-  --color-orange-900: #7e2410;
-  --color-orange-950: #511c10;
+  /* Orange/accent scale moved to @theme inline above (runtime-driven) */
 
   --color-success-25: #f6fef9;
   --color-success-50: #ecfdf3;

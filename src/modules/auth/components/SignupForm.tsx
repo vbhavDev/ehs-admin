@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, Lock, User, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mail, Lock, User, Loader2, AlertCircle, CheckCircle, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useFeatureFlag } from '@/modules/feature-flags/hooks/useFeatureFlags';
+import { FEATURE_FLAG_KEYS } from '@/types/feature-flag.types';
 
 interface SignupFormProps {
   onSwitchToLogin: () => void;
@@ -10,6 +12,7 @@ interface SignupFormProps {
 
 export const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
   const { signup, isSigningUp } = useAuth();
+  const signupEnabled = useFeatureFlag(FEATURE_FLAG_KEYS.ADMIN_SIGNUP);
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -55,6 +58,8 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
     e.preventDefault();
     setErrors({});
 
+    if (!signupEnabled) return;
+
     if (!validate()) return;
 
     try {
@@ -94,6 +99,16 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {!signupEnabled && (
+        <div className="flex items-start gap-3 rounded-2xl border border-error-200 bg-error-50 p-4 text-sm text-error-600 dark:border-error-500/20 dark:bg-error-500/10 dark:text-error-400">
+          <ShieldAlert size={18} className="mt-0.5 shrink-0" />
+          <p>
+            New account creation is temporarily <strong>disabled</strong> by a platform
+            administrator.
+          </p>
+        </div>
+      )}
+
       {errors.general && (
         <div className="p-4 bg-brand-500/10 border border-brand-500/20 rounded-2xl flex items-center gap-3 text-brand-500 text-sm">
           <AlertCircle size={18} />
@@ -214,7 +229,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
 
       <button
         type="submit"
-        disabled={isSigningUp}
+        disabled={isSigningUp || !signupEnabled}
         className="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand-500/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-lg tracking-wide"
       >
         {isSigningUp ? (
