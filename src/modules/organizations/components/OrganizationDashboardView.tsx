@@ -144,7 +144,7 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const totalAuditsLive = liveMetrics
+  const totalObservationsLive = liveMetrics
     ? Object.values(liveMetrics.statusStats || {}).reduce(
         (acc: number, val: number | unknown) => acc + (Number(val) || 0),
         0,
@@ -153,12 +153,12 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
 
   // Real report metrics for visual presentation
   const metrics = {
-    totalAudits: totalAuditsLive,
+    totalObservations: totalObservationsLive,
     openIncidents: liveMetrics?.statusStats?.OPEN || 0,
     resolvedIncidents: liveMetrics?.statusStats?.RESOLVED || 0,
     complianceScore:
-      totalAuditsLive > 0
-        ? Math.round(((liveMetrics?.statusStats?.RESOLVED || 0) / totalAuditsLive) * 100)
+      totalObservationsLive > 0
+        ? Math.round(((liveMetrics?.statusStats?.RESOLVED || 0) / totalObservationsLive) * 100)
         : 100,
   };
 
@@ -415,7 +415,8 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
             </div>
 
             <p className="text-[11px] text-gray-400 dark:text-gray-500">
-              {metrics.totalAudits} audits completed | {metrics.openIncidents} pending issues
+              {metrics.totalObservations} observations completed | {metrics.openIncidents} pending
+              issues
             </p>
           </div>
         </div>
@@ -712,7 +713,8 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
                 EHS Activity & Safety Reporting Metrics
               </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Overview of submitted incident reports, safety audits, and corrective action items
+                Overview of submitted incident reports, safety observations, and corrective action
+                items
               </p>
             </div>
             <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-500/20">
@@ -723,7 +725,7 @@ export const OrganizationDashboardView: React.FC<OrganizationDashboardViewProps>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-navy-900/40 border border-gray-100 dark:border-navy-700/60 text-center space-y-1">
               <span className="text-2xl font-extrabold text-gray-900 dark:text-white">142</span>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Total Safety Audits</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Total Safety Observations</p>
             </div>
             <div className="p-4 rounded-xl bg-amber-50/50 dark:bg-amber-500/5 border border-amber-100 dark:border-amber-500/20 text-center space-y-1">
               <span className="text-2xl font-extrabold text-amber-600 dark:text-amber-400">3</span>

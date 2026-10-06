@@ -5,8 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Database, Zap, Clock } from 'lucide-react';
 import Button from '@/components/ui/button/Button';
 import { pluginService, AiTrackingStats, AiTokenLog } from '@/services/plugin.service';
-import { formatDate } from '@/utils/dateUtils';
-import dayjs from 'dayjs';
+
+function formatDate(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleString();
+  } catch {
+    return dateStr;
+  }
+}
 
 export default function PluginUsagePage() {
   const params = useParams();
@@ -34,18 +40,24 @@ export default function PluginUsagePage() {
     try {
       setIsLoading(true);
 
-      let startDate = undefined;
-      let endDate = undefined;
+      let startDate: string | undefined = undefined;
+      let endDate: string | undefined = undefined;
+
+      const now = new Date();
 
       if (dateFilter === 'today') {
-        startDate = dayjs().startOf('day').toISOString();
-        endDate = dayjs().endOf('day').toISOString();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        startDate = start.toISOString();
+        endDate = end.toISOString();
       } else if (dateFilter === 'month') {
-        startDate = dayjs().startOf('month').toISOString();
-        endDate = dayjs().endOf('month').toISOString();
+        const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+        const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+        startDate = start.toISOString();
+        endDate = end.toISOString();
       } else if (dateFilter === 'custom' && customStart && customEnd) {
-        startDate = dayjs(customStart).startOf('day').toISOString();
-        endDate = dayjs(customEnd).endOf('day').toISOString();
+        startDate = new Date(`${customStart}T00:00:00`).toISOString();
+        endDate = new Date(`${customEnd}T23:59:59`).toISOString();
       }
 
       // We use the pluginKey as the provider identifier
@@ -61,9 +73,11 @@ export default function PluginUsagePage() {
       ]);
 
       setStats(statsRes);
-      setLogs(logsRes.data);
-      if (logsRes.meta) {
+      setLogs(logsRes?.data || []);
+      if (logsRes?.meta?.totalPages) {
         setTotalPages(logsRes.meta.totalPages);
+      } else if (logsRes?.totalPages) {
+        setTotalPages(logsRes.totalPages);
       }
     } catch (error) {
       // ignore

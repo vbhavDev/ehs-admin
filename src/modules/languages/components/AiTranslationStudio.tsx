@@ -53,7 +53,7 @@ const DOMAIN_PRESETS = [
   {
     label: 'PPE & Hazard Inspection',
     prompt:
-      'Use standard industrial PPE (Personal Protective Equipment) and plant hazard audit terminology.',
+      'Use standard industrial PPE (Personal Protective Equipment) and plant hazard observation terminology.',
   },
   {
     label: 'Facilities & Plant Operations',

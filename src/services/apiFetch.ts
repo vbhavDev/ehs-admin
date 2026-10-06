@@ -17,6 +17,20 @@ interface FetchOptions extends RequestInit {
   requireAuth?: boolean;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+  meta?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+  };
+}
+
 /**
  * Centralized API fetcher
  * Handles headers, generic JSON parsing, and central error throwing.

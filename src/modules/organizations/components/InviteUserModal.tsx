@@ -28,7 +28,7 @@ const MEMBER_ROLES = [
   {
     id: 'org:inspector',
     label: 'Safety Inspector',
-    description: 'Conducts safety audits, uploads media, and submits hazard reports.',
+    description: 'Conducts safety observations, uploads media, and submits hazard reports.',
     badge: 'Recommended',
   },
   {

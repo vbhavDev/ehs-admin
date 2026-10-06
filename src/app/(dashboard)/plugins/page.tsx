@@ -69,11 +69,7 @@ export default function PluginsPage() {
               className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col"
             >
               <div className="absolute top-6 right-6 flex space-x-2">
-                <Badge
-                  color={plugin.isEnabled ? 'success' : 'warning'}
-                  variant="soft"
-                  rounded="full"
-                >
+                <Badge color={plugin.isEnabled ? 'success' : 'warning'} variant="light">
                   {plugin.isEnabled ? 'Active' : 'Disabled'}
                 </Badge>
               </div>
