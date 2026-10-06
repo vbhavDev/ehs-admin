@@ -23,6 +23,18 @@ export function PluginStatsBar({
 }: PluginStatsBarProps) {
   const cards = [
     {
+      id: 'all' as const,
+      title: 'Total Integrations',
+      value: totalCount,
+      subtitle: 'All registered 3rd party plugins',
+      icon: Blocks,
+      badge: 'Catalog',
+      gradient: 'from-purple-500 to-indigo-600',
+      activeRing:
+        'border-brand-500/50 bg-brand-500/5 dark:bg-brand-500/10 ring-2 ring-brand-500/20',
+      iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400',
+    },
+    {
       id: 'used' as const,
       title: 'Used in Current System',
       value: usedCount,
@@ -44,18 +56,6 @@ export function PluginStatsBar({
       gradient: 'from-blue-500 to-indigo-600',
       activeRing: 'border-blue-500/50 bg-blue-500/5 dark:bg-blue-500/10 ring-2 ring-blue-500/20',
       iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400',
-    },
-    {
-      id: 'all' as const,
-      title: 'Total Integrations',
-      value: totalCount,
-      subtitle: 'All registered 3rd party plugins',
-      icon: Blocks,
-      badge: 'Catalog',
-      gradient: 'from-purple-500 to-indigo-600',
-      activeRing:
-        'border-brand-500/50 bg-brand-500/5 dark:bg-brand-500/10 ring-2 ring-brand-500/20',
-      iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400',
     },
     {
       id: null,

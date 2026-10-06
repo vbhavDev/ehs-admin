@@ -151,16 +151,27 @@ export function PluginCard({
           )}
         </div>
 
-        {/* 3-Button Action Grid */}
-        <div className="grid grid-cols-3 gap-1.5">
+        {/* Action Buttons Grid */}
+        <div className={`grid gap-1.5 ${plugin.category === 'ai' ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <Link
             href={`/plugins/${plugin.pluginKey}`}
             className="flex items-center justify-center gap-1 rounded-xl border border-gray-200 bg-white py-2 text-[11px] font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-navy-700 dark:bg-navy-800 dark:text-gray-300 dark:hover:bg-navy-700"
-            title="View Settings & Logs"
+            title="View Settings & Details"
           >
             <Eye size={12} className="text-brand-500" />
             <span>View</span>
           </Link>
+
+          {plugin.category === 'ai' && (
+            <Link
+              href={`/plugins/${plugin.pluginKey}/usage`}
+              className="flex items-center justify-center gap-1 rounded-xl border border-gray-200 bg-white py-2 text-[11px] font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-navy-700 dark:bg-navy-800 dark:text-gray-300 dark:hover:bg-navy-700"
+              title="Usage & AI Token Logs"
+            >
+              <Activity size={12} className="text-purple-500" />
+              <span>Usage</span>
+            </Link>
+          )}
 
           <button
             type="button"

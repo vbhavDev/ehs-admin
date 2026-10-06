@@ -15,7 +15,12 @@ export const WebsiteTable: React.FC = () => {
   const router = useRouter();
   const { user } = useAuthStore();
   const { confirm } = useGlobalModal();
-  const isSuperAdmin = user?.role?.roleKey === 'super_admin';
+  const isSuperAdmin =
+    user?.role?.roleKey === 'super_admin' ||
+    user?.role?.roleKey === 'devops' ||
+    user?.roles?.some(
+      (r: { roleKey?: string }) => r.roleKey === 'super_admin' || r.roleKey === 'devops',
+    );
 
   const [params, setParams] = useState({
     page: 1,

@@ -11,7 +11,10 @@ export default function WebsitesPage() {
   const { user } = useAuthStore();
   const isSuperAdmin =
     user?.role?.roleKey === 'super_admin' ||
-    user?.roles?.some((r: { roleKey?: string }) => r.roleKey === 'super_admin');
+    user?.role?.roleKey === 'devops' ||
+    user?.roles?.some(
+      (r: { roleKey?: string }) => r.roleKey === 'super_admin' || r.roleKey === 'devops',
+    );
 
   return (
     <div className="space-y-6">

@@ -1,39 +1,55 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { usePlugins } from '@/modules/plugins/hooks/usePlugins';
+import { PluginHeader } from '@/modules/plugins/components/PluginHeader';
+import { PluginStatsBar } from '@/modules/plugins/components/PluginStatsBar';
+import { PluginStatusTabs } from '@/modules/plugins/components/PluginStatusTabs';
+import { CategoryTabs } from '@/modules/plugins/components/CategoryTabs';
+import { PluginCard } from '@/modules/plugins/components/PluginCard';
+import { PluginConfigDrawer } from '@/modules/plugins/components/PluginConfigDrawer';
+import { CreatePluginModal } from '@/modules/plugins/components/CreatePluginModal';
+import { PluginItem } from '@/types/plugin.types';
+import { Blocks, CheckCircle2, Sparkles, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
-import { AlertTriangle, Plug, Settings, Activity } from 'lucide-react';
-import Button from '@/components/ui/button/Button';
-import Badge from '@/components/ui/badge/Badge';
-import { pluginService, Plugin } from '@/services/plugin.service';
-import Link from 'next/link';
+import { useHasPermission } from '@/lib/permissions';
 
 export default function PluginsPage() {
   const { user } = useAuthStore();
-  const isSuperAdmin = user?.role?.roleKey === 'super_admin';
+  const canAccess =
+    useHasPermission('plugins.view') ||
+    user?.role?.roleKey === 'super_admin' ||
+    user?.role?.roleKey === 'devops' ||
+    user?.roles?.some(
+      (r: { roleKey?: string }) => r.roleKey === 'super_admin' || r.roleKey === 'devops',
+    );
 
-  const [plugins, setPlugins] = useState<Plugin[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    plugins,
+    isLoading,
+    selectedCategory,
+    setSelectedCategory,
+    statusFilter,
+    setStatusFilter,
+    searchQuery,
+    setSearchQuery,
+    totalCount,
+    usedCount,
+    availableCount,
+    verifiedCount,
+    categoryCounts,
+    testingKeys,
+    refresh,
+    toggleStatus,
+    testConnection,
+    updatePlugin,
+    createPlugin,
+  } = usePlugins();
 
-  useEffect(() => {
-    if (isSuperAdmin) {
-      loadPlugins();
-    }
-  }, [isSuperAdmin]);
+  const [activeConfigurePlugin, setActiveConfigurePlugin] = useState<PluginItem | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const loadPlugins = async () => {
-    try {
-      setIsLoading(true);
-      const res = await pluginService.getPlugins();
-      setPlugins(res.data);
-    } catch (error) {
-      // ignore
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (!isSuperAdmin) {
+  if (!canAccess) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 space-y-4">
         <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 flex items-center justify-center">
@@ -41,83 +57,149 @@ export default function PluginsPage() {
         </div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">Access Denied</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-md">
-          Only users with the Super Admin role have permission to configure plugins.
+          You do not have permission to view or configure plugins.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Plugins & Integrations</h1>
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
-          Manage system plugins, AI engines, and external API integrations.
-        </p>
-      </div>
+    <div className="p-6 md:p-8 max-w-7xl mx-auto min-h-screen">
+      {/* Top Bar / Header */}
+      <PluginHeader
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onRefresh={refresh}
+        onOpenCreateModal={() => setIsCreateModalOpen(true)}
+        isRefreshing={isLoading}
+      />
 
+      {/* Summary Statistics Bar (Clickable cards switch views) */}
+      <PluginStatsBar
+        totalCount={totalCount}
+        usedCount={usedCount}
+        availableCount={availableCount}
+        verifiedCount={verifiedCount}
+        statusFilter={statusFilter}
+        onSelectStatus={setStatusFilter}
+      />
+
+      {/* Primary View Switcher: Used in Current vs Available for Use vs All */}
+      <PluginStatusTabs
+        statusFilter={statusFilter}
+        onSelectStatus={setStatusFilter}
+        usedCount={usedCount}
+        availableCount={availableCount}
+        totalCount={totalCount}
+      />
+
+      {/* Category Filter Tabs */}
+      <CategoryTabs
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        categoryCounts={categoryCounts}
+      />
+
+      {/* Content Area */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 space-y-4">
-          <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-semibold text-gray-500">Loading plugins...</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plugins.map((plugin) => (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
-              key={plugin.id}
-              className="bg-white dark:bg-navy-900 border border-gray-100 dark:border-navy-800 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col"
+              key={i}
+              className="h-64 rounded-2xl border border-gray-100 bg-white p-5 animate-pulse dark:border-navy-700 dark:bg-navy-800"
             >
-              <div className="absolute top-6 right-6 flex space-x-2">
-                <Badge color={plugin.isEnabled ? 'success' : 'warning'} variant="light">
-                  {plugin.isEnabled ? 'Active' : 'Disabled'}
-                </Badge>
+              <div className="flex items-center justify-between mb-4">
+                <div className="h-5 w-24 rounded-md bg-gray-200 dark:bg-navy-700" />
+                <div className="h-5 w-9 rounded-full bg-gray-200 dark:bg-navy-700" />
               </div>
-
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-navy-800 flex items-center justify-center text-gray-600 dark:text-gray-300">
-                  <Plug size={24} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 dark:text-white text-lg">{plugin.name}</h3>
-                  <p className="text-xs font-medium text-brand-500 uppercase tracking-wider">
-                    {plugin.category}
-                  </p>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-12 w-12 rounded-xl bg-gray-200 dark:bg-navy-700" />
+                <div className="space-y-2">
+                  <div className="h-4 w-32 rounded bg-gray-200 dark:bg-navy-700" />
+                  <div className="h-3 w-20 rounded bg-gray-100 dark:bg-navy-700/60" />
                 </div>
               </div>
-
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 flex-grow">
-                {plugin.description || 'No description provided.'}
-              </p>
-
-              <div className="flex space-x-3 mt-auto">
-                {plugin.category === 'AI' && (
-                  <Link href={`/plugins/${plugin.pluginKey}/usage`} className="flex-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      startIcon={<Activity size={14} />}
-                    >
-                      Usage & Logs
-                    </Button>
-                  </Link>
-                )}
-                <Link href={`/plugins/${plugin.pluginKey}`} className="flex-1">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    className="w-full"
-                    startIcon={<Settings size={14} />}
-                  >
-                    Configure
-                  </Button>
-                </Link>
-              </div>
+              <div className="h-12 w-full rounded-xl bg-gray-100 dark:bg-navy-700/40 mb-4" />
+              <div className="h-9 w-full rounded-xl bg-gray-200 dark:bg-navy-700" />
             </div>
           ))}
         </div>
+      ) : plugins.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-gray-200 bg-white p-12 text-center dark:border-navy-700 dark:bg-navy-800/40">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-50 text-brand-500 mb-4 dark:bg-brand-500/10">
+            {statusFilter === 'used' ? (
+              <CheckCircle2 size={32} className="text-emerald-500" />
+            ) : statusFilter === 'available' ? (
+              <Sparkles size={32} className="text-blue-500" />
+            ) : (
+              <Blocks size={32} />
+            )}
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+            {statusFilter === 'used'
+              ? 'No Plugins Currently Used in System'
+              : statusFilter === 'available'
+                ? 'No Available (Disabled) Plugins'
+                : 'No Integration Plugins Found'}
+          </h3>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 max-w-md">
+            {searchQuery
+              ? `No integrations match your search query "${searchQuery}".`
+              : statusFilter === 'used'
+                ? 'No 3rd party plugins are currently enabled. Switch to "Available for Use" tab to configure and activate integrations.'
+                : statusFilter === 'available'
+                  ? 'All registered 3rd party plugins are currently enabled and active in the system!'
+                  : 'No 3rd party plugins are registered for this category.'}
+          </p>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            {statusFilter === 'used' && (
+              <button
+                type="button"
+                onClick={() => setStatusFilter('available')}
+                className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-all"
+              >
+                Browse Available Plugins ({availableCount})
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="rounded-xl bg-brand-500 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-brand-500/20 hover:bg-brand-600 transition-all"
+            >
+              Add New Integration
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {plugins.map((plugin) => (
+            <PluginCard
+              key={plugin.id || plugin.pluginKey}
+              plugin={plugin}
+              onToggleStatus={toggleStatus}
+              onTestConnection={testConnection}
+              onConfigure={(p) => setActiveConfigurePlugin(p)}
+              isTesting={testingKeys[plugin.pluginKey]}
+            />
+          ))}
+        </div>
       )}
+
+      {/* Drawer for Configuration */}
+      <PluginConfigDrawer
+        plugin={activeConfigurePlugin}
+        isOpen={Boolean(activeConfigurePlugin)}
+        onClose={() => setActiveConfigurePlugin(null)}
+        onSave={updatePlugin}
+        onTestConnection={testConnection}
+      />
+
+      {/* Modal for Registering New Plugin */}
+      <CreatePluginModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={createPlugin}
+      />
     </div>
   );
 }

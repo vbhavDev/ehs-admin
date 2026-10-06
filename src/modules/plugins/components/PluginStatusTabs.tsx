@@ -29,6 +29,15 @@ export function PluginStatusTabs({
     activeStyle: string;
   }[] = [
     {
+      id: 'all',
+      label: 'All Integrations',
+      description: 'Complete plugins catalog',
+      icon: Layers,
+      count: totalCount,
+      badgeStyle: 'bg-gray-100 text-gray-700 dark:bg-navy-700 dark:text-gray-300',
+      activeStyle: 'bg-brand-500 text-white shadow-md shadow-brand-500/20 border-brand-500',
+    },
+    {
       id: 'used',
       label: 'Used in Current System',
       description: 'Active & enabled integrations',
@@ -45,15 +54,6 @@ export function PluginStatusTabs({
       count: availableCount,
       badgeStyle: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300',
       activeStyle: 'bg-blue-600 text-white shadow-md shadow-blue-500/20 border-blue-600',
-    },
-    {
-      id: 'all',
-      label: 'All Integrations',
-      description: 'Complete plugins catalog',
-      icon: Layers,
-      count: totalCount,
-      badgeStyle: 'bg-gray-100 text-gray-700 dark:bg-navy-700 dark:text-gray-300',
-      activeStyle: 'bg-brand-500 text-white shadow-md shadow-brand-500/20 border-brand-500',
     },
   ];
 

@@ -12,12 +12,12 @@ interface CategoryTabsProps {
 
 const CATEGORIES: { id: PluginCategory | 'all'; label: string; icon: React.ElementType }[] = [
   { id: 'all', label: 'All Plugins', icon: Grid },
+  { id: 'ai', label: 'AI & Vision', icon: Cpu },
   { id: 'email', label: 'Email', icon: Mail },
-  { id: 'payment', label: 'Payments', icon: CreditCard },
   { id: 'whatsapp', label: 'WhatsApp API', icon: MessageSquare },
   { id: 'sms', label: 'SMS & Messaging', icon: Sliders },
+  { id: 'payment', label: 'Payments', icon: CreditCard },
   { id: 'storage', label: 'Cloud Storage', icon: Database },
-  { id: 'ai', label: 'AI & Vision', icon: Cpu },
 ];
 
 export function CategoryTabs({
