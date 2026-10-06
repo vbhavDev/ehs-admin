@@ -24,9 +24,37 @@ export interface Plugin {
 }
 
 export interface AiTrackingStats {
-  byFeature: { _id: string; total: number; cost: number }[];
-  byModel: { _id: string; total: number; cost: number }[];
-  totals: { totalInput: number; totalOutput: number; totalCost: number };
+  byProvider?: {
+    _id: string;
+    total: number;
+    totalInput?: number;
+    totalOutput?: number;
+    cost: number;
+    count: number;
+  }[];
+  byFeature: {
+    _id: string;
+    total: number;
+    totalInput?: number;
+    totalOutput?: number;
+    cost: number;
+    count: number;
+  }[];
+  byModel: {
+    _id: string;
+    total: number;
+    totalInput?: number;
+    totalOutput?: number;
+    cost: number;
+    count: number;
+  }[];
+  totals: {
+    totalInput: number;
+    totalOutput: number;
+    totalTokens?: number;
+    totalCost: number;
+    totalRequests?: number;
+  };
 }
 
 export interface AiTokenLog {
@@ -35,7 +63,8 @@ export interface AiTokenLog {
   orgId?: { id: string; name: string };
   feature: string;
   provider: string;
-  model: string;
+  model?: string;
+  aiModel?: string;
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
@@ -54,11 +83,13 @@ export const pluginService = {
 
   getAiTrackingStats: async (params: {
     provider?: string;
+    feature?: string;
     startDate?: string;
     endDate?: string;
   }): Promise<AiTrackingStats> => {
     const qp = new URLSearchParams();
     if (params.provider) qp.append('provider', params.provider);
+    if (params.feature) qp.append('feature', params.feature);
     if (params.startDate) qp.append('startDate', params.startDate);
     if (params.endDate) qp.append('endDate', params.endDate);
     const qs = qp.toString();
@@ -69,6 +100,7 @@ export const pluginService = {
     page?: number;
     limit?: number;
     provider?: string;
+    feature?: string;
     startDate?: string;
     endDate?: string;
   }): Promise<PaginatedResponse<AiTokenLog>> => {
@@ -76,6 +108,7 @@ export const pluginService = {
     if (params.page) qp.append('page', params.page.toString());
     if (params.limit) qp.append('limit', params.limit.toString());
     if (params.provider) qp.append('provider', params.provider);
+    if (params.feature) qp.append('feature', params.feature);
     if (params.startDate) qp.append('startDate', params.startDate);
     if (params.endDate) qp.append('endDate', params.endDate);
     const qs = qp.toString();

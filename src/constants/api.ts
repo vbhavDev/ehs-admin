@@ -52,6 +52,9 @@ export const API_ENDPOINTS = {
       BY_KEY: (key: string) => `/admin/plugins/${key}`,
       TOGGLE: (key: string) => `/admin/plugins/${key}/toggle`,
       TEST_CONNECTION: (key: string) => `/admin/plugins/${key}/test-connection`,
+      AI_MODELS: (key: string) => `/admin/plugins/${key}/ai-models`,
+      SET_DEFAULT_MODEL: (key: string) => `/admin/plugins/${key}/default-model`,
+      AI_ORCHESTRATION: '/admin/plugins/ai-orchestration',
     },
     COMMUNICATIONS: {
       LOGS: '/admin/communications/logs',

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { PluginItem, UpdatePluginData } from '@/types/plugin.types';
+import { PluginItem, UpdatePluginData, AiModelInfo } from '@/types/plugin.types';
+import { pluginsService } from '@/services/plugins.service';
 import {
   X,
   Eye,
@@ -12,7 +13,10 @@ import {
   CheckCircle2,
   AlertTriangle,
   Info,
+  RefreshCw,
+  Cpu,
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface PluginConfigDrawerProps {
   plugin: PluginItem | null;
@@ -37,6 +41,8 @@ export function PluginConfigDrawer({
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ status: string; message: string } | null>(null);
+  const [aiModels, setAiModels] = useState<AiModelInfo[]>([]);
+  const [isFetchingAiModels, setIsFetchingAiModels] = useState(false);
 
   useEffect(() => {
     if (plugin) {
@@ -61,8 +67,28 @@ export function PluginConfigDrawer({
       }
       setSettings(initialSettings);
       setTestResult(null);
+
+      // Reset AI models list on plugin change
+      setAiModels([]);
     }
   }, [plugin]);
+
+  const handleFetchAiModels = async () => {
+    if (!plugin) return;
+    try {
+      setIsFetchingAiModels(true);
+      const res = await pluginsService.getAvailableAiModels(plugin.pluginKey);
+      if (res && res.models) {
+        setAiModels(res.models);
+        toast.success(`Discovered ${res.models.length} live models from ${plugin.name} API!`);
+      }
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'Failed to query live models';
+      toast.error(errMsg);
+    } finally {
+      setIsFetchingAiModels(false);
+    }
+  };
 
   if (!isOpen || !plugin) return null;
 
@@ -242,9 +268,71 @@ export function PluginConfigDrawer({
 
           {/* Provider Specific Settings */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-400 mb-3">
-              Provider Configuration Settings
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-400">
+                Provider Configuration Settings
+              </h3>
+              {plugin.category === 'ai' && (
+                <button
+                  type="button"
+                  onClick={handleFetchAiModels}
+                  disabled={isFetchingAiModels}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-600 hover:text-purple-700 dark:text-purple-400 disabled:opacity-50"
+                >
+                  <RefreshCw size={11} className={isFetchingAiModels ? 'animate-spin' : ''} />
+                  <span>Fetch Models via API</span>
+                </button>
+              )}
+            </div>
+
+            {/* AI Specific Model Picker */}
+            {plugin.category === 'ai' && (
+              <div className="mb-4 rounded-xl border border-purple-200 bg-purple-50/40 p-3.5 dark:border-purple-800/30 dark:bg-purple-950/20 space-y-2">
+                <label className="block text-xs font-bold text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
+                  <Cpu size={14} className="text-purple-600" />
+                  Default Platform AI Model
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    value={settings.defaultModel || settings.model || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      handleSettingChange('defaultModel', val);
+                      handleSettingChange('model', val);
+                    }}
+                    className="flex-1 rounded-lg border border-purple-200 bg-white px-3 py-1.5 text-xs font-mono font-medium text-gray-900 outline-none focus:border-purple-500 dark:border-navy-700 dark:bg-navy-900 dark:text-white"
+                  >
+                    {settings.defaultModel &&
+                      !aiModels.some((m) => m.id === settings.defaultModel) && (
+                        <option value={settings.defaultModel}>
+                          {settings.defaultModel} (Configured)
+                        </option>
+                      )}
+                    {aiModels.length > 0 ? (
+                      aiModels.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name || m.id} ({m.id})
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommended)</option>
+                        <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep Reasoning)</option>
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                        <option value="gpt-4o">GPT-4o (Flagship Multimodal)</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini (Fast & Efficient)</option>
+                        <option value="o1-preview">OpenAI o1 Reasoning</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+                <p className="text-[10px] text-purple-700/80 dark:text-purple-400">
+                  Select the active model version to execute hazard vision analysis & copilot
+                  completions.
+                </p>
+              </div>
+            )}
+
             <div className="space-y-3.5">
               {Object.keys(settings).length === 0 ? (
                 <p className="text-xs text-gray-400 italic">No additional settings required.</p>

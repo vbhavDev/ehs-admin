@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { PluginItem, UpdatePluginData } from '@/types/plugin.types';
 import { pluginsService } from '@/services/plugins.service';
 import { PluginConfigDrawer } from './PluginConfigDrawer';
+import { AiModelsDiscoveryCard } from './AiModelsDiscoveryCard';
+import { AiOrchestrationCard } from './AiOrchestrationCard';
 import {
   ArrowLeft,
   Plug,
@@ -348,6 +350,16 @@ export function PluginDetailView({
 
           {/* Header Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {plugin.category === 'ai' && (
+              <Link
+                href={`/plugins/${plugin.pluginKey}/usage`}
+                className="inline-flex items-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-2.5 text-xs font-bold text-purple-700 transition-all hover:bg-purple-100 dark:border-purple-500/30 dark:bg-purple-500/10 dark:text-purple-300 dark:hover:bg-purple-500/20"
+              >
+                <Activity size={15} className="text-purple-600 dark:text-purple-400" />
+                <span>AI Token Usage & Logs</span>
+              </Link>
+            )}
+
             <button
               type="button"
               onClick={() => onTestConnection(plugin.pluginKey)}
@@ -527,6 +539,25 @@ export function PluginDetailView({
                 </div>
               </div>
             </div>
+
+            {/* AI Live Models Discovery & Default Selector Card */}
+            {plugin.category === 'ai' && (
+              <AiModelsDiscoveryCard
+                plugin={plugin}
+                onModelChanged={(newModel) => {
+                  onUpdatePlugin(plugin.pluginKey, {
+                    settings: {
+                      ...(plugin.settings || {}),
+                      defaultModel: newModel,
+                      model: newModel,
+                    },
+                  });
+                }}
+              />
+            )}
+
+            {/* AI Multi-Engine Redundancy & Failover Router Card */}
+            {plugin.category === 'ai' && <AiOrchestrationCard />}
 
             {/* Brevo Active Senders Manager Card */}
             {(plugin.provider === 'brevo' || plugin.pluginKey === 'brevo') && (

@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Search, Plus, Blocks, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
+import { Search, Plus, Blocks, RefreshCw, Activity } from 'lucide-react';
 
 interface PluginHeaderProps {
   searchQuery: string;
@@ -59,6 +60,15 @@ export function PluginHeader({
         >
           <RefreshCw size={15} className={isRefreshing ? 'animate-spin' : ''} />
         </button>
+
+        {/* AI Telemetry Shortcut */}
+        <Link
+          href="/plugins/all/usage"
+          className="inline-flex items-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-3.5 py-2 text-xs font-bold text-purple-700 hover:bg-purple-100 transition-all dark:border-purple-500/30 dark:bg-purple-500/10 dark:text-purple-300 dark:hover:bg-purple-500/20"
+        >
+          <Activity size={14} className="text-purple-600 dark:text-purple-400" />
+          <span>AI Token Telemetry</span>
+        </Link>
 
         {/* Add Plugin Button */}
         <button

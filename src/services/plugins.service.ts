@@ -102,4 +102,74 @@ export const pluginsService = {
       method: 'DELETE',
     });
   },
+
+  async getAvailableAiModels(key: string): Promise<{
+    pluginKey: string;
+    defaultModel: string;
+    models: Array<{
+      id: string;
+      name: string;
+      description?: string;
+      inputTokenLimit?: number;
+      outputTokenLimit?: number;
+      isDefault: boolean;
+      isLiveFetched?: boolean;
+    }>;
+    lastFetchedAt: string;
+  }> {
+    return apiFetch(API_ENDPOINTS.ADMIN.PLUGINS.AI_MODELS(key), {
+      method: 'GET',
+    });
+  },
+
+  async setDefaultAiModel(
+    key: string,
+    modelId: string,
+  ): Promise<{ success: boolean; message: string; plugin: PluginItem }> {
+    return apiFetch(API_ENDPOINTS.ADMIN.PLUGINS.SET_DEFAULT_MODEL(key), {
+      method: 'POST',
+      body: JSON.stringify({ modelId }),
+    });
+  },
+
+  async getAiOrchestrationConfig(): Promise<{
+    primaryProvider: string;
+    primaryModel: string;
+    secondaryProvider: string;
+    secondaryModel: string;
+    fallbackMethod: 'AUTO_FAILOVER' | 'COST_OPTIMIZED' | 'SEQUENTIAL_CHAIN';
+    timeoutSeconds: number;
+    retryAttempts: number;
+    enableAutomaticFallback: boolean;
+    features?: Record<
+      string,
+      {
+        primaryProvider: string;
+        primaryModel: string;
+        secondaryProvider: string;
+        secondaryModel: string;
+      }
+    >;
+    availableProviders?: Array<{
+      key: string;
+      name: string;
+      currentModel: string;
+      isEnabled: boolean;
+    }>;
+  }> {
+    return apiFetch(API_ENDPOINTS.ADMIN.PLUGINS.AI_ORCHESTRATION, {
+      method: 'GET',
+    });
+  },
+
+  async updateAiOrchestrationConfig(config: Record<string, unknown>): Promise<{
+    success: boolean;
+    message: string;
+    config: Record<string, unknown>;
+  }> {
+    return apiFetch(API_ENDPOINTS.ADMIN.PLUGINS.AI_ORCHESTRATION, {
+      method: 'POST',
+      body: JSON.stringify(config),
+    });
+  },
 };

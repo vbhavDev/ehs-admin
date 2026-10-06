@@ -9,6 +9,7 @@ import { CategoryTabs } from '@/modules/plugins/components/CategoryTabs';
 import { PluginCard } from '@/modules/plugins/components/PluginCard';
 import { PluginConfigDrawer } from '@/modules/plugins/components/PluginConfigDrawer';
 import { CreatePluginModal } from '@/modules/plugins/components/CreatePluginModal';
+import { AiOrchestrationCard } from '@/modules/plugins/components/AiOrchestrationCard';
 import { PluginItem } from '@/types/plugin.types';
 import { Blocks, CheckCircle2, Sparkles, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
@@ -99,6 +100,9 @@ export default function PluginsPage() {
         onSelectCategory={setSelectedCategory}
         categoryCounts={categoryCounts}
       />
+
+      {/* AI Multi-Engine Orchestration & Fallback Engine Hub (Shown when viewing AI category) */}
+      {selectedCategory === 'ai' && <AiOrchestrationCard onConfigSaved={refresh} />}
 
       {/* Content Area */}
       {isLoading ? (
